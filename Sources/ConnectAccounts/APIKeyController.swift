@@ -3,7 +3,7 @@ import ConnectCore
 import ConnectKeychain
 import Foundation
 
-@Observable
+@Observable @MainActor
 public class APIKeyController {
     public private(set) var apiKeys: [APIKey]?
     public var selectedAPIKey: APIKey? {
