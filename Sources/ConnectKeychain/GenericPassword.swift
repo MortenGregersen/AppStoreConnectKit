@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct GenericPassword: Sendable {
+public struct GenericPassword: Equatable, Sendable {
     public let account: String
     public let label: String
     public let generic: Data

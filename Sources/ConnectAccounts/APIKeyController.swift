@@ -5,7 +5,7 @@ import Foundation
 
 @Observable
 public class APIKeyController {
-    public private(set) var apiKeys: FetchingState<[APIKey]>?
+    public private(set) var apiKeys: [APIKey]?
     public var selectedAPIKey: APIKey? {
         didSet {
             if let selectedAPIKey {
@@ -18,67 +18,66 @@ public class APIKeyController {
     public var didDeleteAPIKey: PassthroughSubject<APIKey, Never> = .init()
 
     private let service: String
+    private let keychain: KeychainProtocol
     private var selectedAPIKeyId: String? {
         get { UserDefaults.standard.string(forKey: "selected-api-key-id") }
         set { UserDefaults.standard.set(newValue, forKey: "selected-api-key-id") }
     }
 
-    public init(service: String) {
-        precondition(!service.isEmpty, "Service must not be empty")
-        self.service = service
-        loadAPIKeys()
+    public convenience init(service: String) {
+        self.init(service: service, keychain: Keychain())
     }
 
-    public func loadAPIKeys() {
-        apiKeys = .fetching
-        do {
-            let apiKeys = try Keychain().listGenericPasswords(forService: service)
-                .map { password -> APIKey in
-                    guard let apiKey = try? APIKey(password: password)
-                    else { throw APIKeyError.invalidAPIKeyFormat }
-                    return apiKey
-                }
-                .sorted { $0.name < $1.name }
-            self.apiKeys = .fetched(apiKeys)
-            if let apiKey = apiKeys.first(where: { $0.keyId == selectedAPIKeyId }) ?? apiKeys.first {
-                selectedAPIKey = apiKey
+    init(service: String, keychain: KeychainProtocol) {
+        precondition(!service.isEmpty, "Service must not be empty")
+        self.service = service
+        self.keychain = keychain
+    }
+
+    public func loadAPIKeys() async throws {
+        let apiKeys = try keychain.listGenericPasswords(forService: service)
+            .map { password -> APIKey in
+                guard let apiKey = try? APIKey(password: password)
+                else { throw APIKeyError.invalidAPIKeyFormat }
+                return apiKey
             }
-        } catch {
-            apiKeys = .error(mapErrorToConnectError(error: error))
+            .sorted { $0.name < $1.name }
+        self.apiKeys = apiKeys
+        if let apiKey = apiKeys.first(where: { $0.keyId == selectedAPIKeyId }) ?? apiKeys.first {
+            selectedAPIKey = apiKey
         }
     }
 
     public func addAPIKey(_ apiKey: APIKey) throws {
         do {
-            try Keychain().addGenericPassword(forService: service, password: apiKey.getGenericPassword())
+            try keychain.addGenericPassword(forService: service, password: apiKey.getGenericPassword())
         } catch KeychainError.duplicatePassword {
             throw APIKeyError.duplicateAPIKey
-        } catch KeychainError.failedAddingPassword(let status) {
+        } catch let KeychainError.failedAddingPassword(status) {
             throw APIKeyError.failedAddingAPIKey(status)
         }
-        guard case .fetched(var apiKeys) = apiKeys else { return }
+        var apiKeys = self.apiKeys ?? []
         if apiKeys.isEmpty {
             selectedAPIKey = apiKey
         }
         apiKeys.append(apiKey)
-        self.apiKeys = .fetched(apiKeys)
+        self.apiKeys = apiKeys
         didAddAPIKey.send(apiKey)
     }
 
     public func deleteAPIKey(_ apiKey: APIKey) throws {
-        try Keychain().deleteGenericPassword(forService: service, password: apiKey.getGenericPassword())
-        guard case .fetched(var apiKeys) = apiKeys,
-              let index = apiKeys.firstIndex(where: { $0.keyId == apiKey.keyId }) else {
+        try keychain.deleteGenericPassword(forService: service, password: apiKey.getGenericPassword())
+        guard var apiKeys, let index = apiKeys.firstIndex(where: { $0.keyId == apiKey.keyId }) else {
             return
         }
         apiKeys.remove(at: index)
-        self.apiKeys = .fetched(apiKeys)
+        self.apiKeys = apiKeys
         didDeleteAPIKey.send(apiKey)
     }
 }
 
 public extension APIKeyController {
-    static func forPreview(apiKeys: FetchingState<[APIKey]>? = nil) -> APIKeyController {
+    static func forPreview(apiKeys: [APIKey]? = nil) -> APIKeyController {
         let controller = APIKeyController(service: "AppStoreConnectKit-Preview")
         controller.apiKeys = apiKeys
         return controller

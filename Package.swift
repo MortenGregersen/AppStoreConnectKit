@@ -39,6 +39,7 @@ let package = Package(
         ]),
         // ConnectCore
         .target(name: "ConnectCore", dependencies: ["ConnectBagbutikFormatting"]),
+        .testTarget(name: "ConnectCoreTests", dependencies: ["ConnectCore"]),
         // ConnectKeychain
         .target(name: "ConnectKeychain", dependencies: ["ConnectCore"]),
         .testTarget(name: "ConnectKeychainTests", dependencies: ["ConnectKeychain"]),

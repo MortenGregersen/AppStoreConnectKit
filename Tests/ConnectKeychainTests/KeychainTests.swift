@@ -1,10 +1,14 @@
 import ConnectKeychain
-import XCTest
+import Foundation
+import Testing
 
-final class KeychainTests: XCTestCase {
+@Suite("Keychain Tests", .tags(.keychain))
+struct KeychainTests {
     // MARK: List generic passwords
 
-    func testListGenericPasswords() throws {
+    @Test("List generic passwords")
+    func listGenericPasswords() throws {
+        // Arrange
         let genericPassword = GenericPassword(account: "P9M252746H", label: "Apple", generic: Data("82067982-6b3b-4a48-be4f-5b10b373c5f2".utf8), value: Data("""
         -----BEGIN PRIVATE KEY-----
         MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgevZzL1gdAFr88hb2
@@ -22,22 +26,28 @@ final class KeychainTests: XCTestCase {
             ]] as CFTypeRef
             return errSecSuccess
         })
-        XCTAssertEqual(try keychain.listGenericPasswords(forService: service), [genericPassword])
+        // Act
+        let genericPasswords = try keychain.listGenericPasswords(forService: service)
+        // Assert
+        #expect(genericPasswords == [genericPassword])
     }
 
-    func testListGenericPasswords_NoPasswordFound() {
+    @Test("List generic passwords - No password found")
+    func listGenericPasswords_NoPasswordFound() throws{
         let keychain = Keychain(secItemCopyMatching: { _, _ in errSecItemNotFound })
-        XCTAssertEqual(try keychain.listGenericPasswords(forService: "AppDab"), [])
+        #expect(try keychain.listGenericPasswords(forService: "AppDab") == [])
     }
 
-    func testListGenericPasswords_Unknown() {
+    @Test("List generic passwords - Unknown error")
+    func listGenericPasswords_Unknown() {
         let keychain = Keychain(secItemCopyMatching: { _, _ in errSecParam })
-        XCTAssertThrowsError(try keychain.listGenericPasswords(forService: "AppDab")) { error in
-            XCTAssertEqual(error as! KeychainError, .errorReadingFromKeychain(errSecParam))
+        #expect(throws: KeychainError.errorReadingFromKeychain(errSecParam)) {
+            try keychain.listGenericPasswords(forService: "AppDab")
         }
     }
 
-    func testListGenericPasswords_InvalidPassword() throws {
+    @Test("List generic passwords - Invalid password")
+    func listGenericPasswords_InvalidPassword() throws {
         let keychain = Keychain(secItemCopyMatching: { query, result in
             let query = query as NSDictionary
             if query[kSecReturnRef] != nil {
@@ -47,84 +57,87 @@ final class KeychainTests: XCTestCase {
             }
             return errSecSuccess
         })
-        XCTAssertThrowsError(try keychain.listGenericPasswords(forService: "AppDab")) { error in
-            XCTAssertEqual(error as! KeychainError, .errorReadingFromKeychain(errSecSuccess))
+        #expect(throws: KeychainError.errorReadingFromKeychain(errSecSuccess)) {
+            try keychain.listGenericPasswords(forService: "AppDab")
         }
     }
 
-    // MARK: Update generic password
+    // MARK: Add generic password
 
-    func testAddGenericPassword() {
+    @Test("Add generic password")
+    func addGenericPassword() throws {
         let keychain = Keychain(secItemAdd: { _, _ in errSecSuccess })
         let genericPassword = GenericPassword(account: "", label: "", generic: Data(), value: Data())
-        XCTAssertNoThrow(try keychain.addGenericPassword(forService: "AppDab", password: genericPassword))
+        try keychain.addGenericPassword(forService: "AppDab", password: genericPassword)
     }
 
-    func testAddGenericPassword_Duplicate() {
+    @Test("Add generic password - Duplicate")
+    func addGenericPassword_Duplicate() {
         let keychain = Keychain(secItemAdd: { _, _ in errSecDuplicateItem })
         let genericPassword = GenericPassword(account: "", label: "", generic: Data(), value: Data())
-        XCTAssertThrowsError(try keychain.addGenericPassword(forService: "AppDab", password: genericPassword)) { error in
-            XCTAssertEqual(error as! KeychainError, .duplicatePassword)
+        #expect(throws: KeychainError.duplicatePassword) {
+            try keychain.addGenericPassword(forService: "AppDab", password: genericPassword)
         }
     }
 
-    func testAddGenericPassword_Unknown() {
+    @Test("Add generic password - Unknown error")
+    func addGenericPassword_Unknown() {
         let status = errSecParam
         let keychain = Keychain(secItemAdd: { _, _ in status })
         let genericPassword = GenericPassword(account: "", label: "", generic: Data(), value: Data())
-        XCTAssertThrowsError(try keychain.addGenericPassword(forService: "AppDab", password: genericPassword)) { error in
-            XCTAssertEqual(error as! KeychainError, .failedAddingPassword(status))
+        #expect(throws: KeychainError.failedAddingPassword(status)) {
+            try keychain.addGenericPassword(forService: "AppDab", password: genericPassword)
         }
     }
 
     // MARK: Update generic password
 
-    func testUpdateGenericPassword() {
+    @Test("Update generic password")
+    func updateGenericPassword() throws {
         let keychain = Keychain(secItemUpdate: { _, _ in errSecSuccess })
         let genericPassword = GenericPassword(account: "", label: "", generic: Data(), value: Data())
-        XCTAssertNoThrow(try keychain.updateGenericPassword(forService: "AppDab", password: genericPassword))
+        try keychain.updateGenericPassword(forService: "AppDab", password: genericPassword)
     }
 
-    func testUpdateGenericPassword_Unknown() {
+    @Test("Update generic password - Unknown error")
+    func updateGenericPassword_Unknown() {
         let keychain = Keychain(secItemUpdate: { _, _ in errSecParam })
         let genericPassword = GenericPassword(account: "", label: "", generic: Data(), value: Data())
-        XCTAssertThrowsError(try keychain.updateGenericPassword(forService: "AppDab", password: genericPassword)) { error in
-            XCTAssertEqual(error as! KeychainError, .failedUpdatingPassword)
+        #expect(throws: KeychainError.failedUpdatingPassword) {
+            try keychain.updateGenericPassword(forService: "AppDab", password: genericPassword)
         }
     }
 
     // MARK: Delete generic password
 
-    func testDeleteGenericPassword() {
+    @Test("Delete generic password")
+    func deleteGenericPassword() throws {
         let keychain = Keychain(secItemDelete: { _ in errSecSuccess })
         let genericPassword = GenericPassword(account: "", label: "", generic: Data(), value: Data())
-        XCTAssertNoThrow(try keychain.deleteGenericPassword(forService: "AppDab", password: genericPassword))
+        try keychain.deleteGenericPassword(forService: "AppDab", password: genericPassword)
     }
 
-    func testDeleteGenericPassword_Unknown() {
+    @Test("Delete generic password - Unknown error")
+    func deleteGenericPassword_Unknown() {
         let keychain = Keychain(secItemDelete: { _ in errSecParam })
         let genericPassword = GenericPassword(account: "", label: "", generic: Data(), value: Data())
-        XCTAssertThrowsError(try keychain.deleteGenericPassword(forService: "AppDab", password: genericPassword)) { error in
-            XCTAssertEqual(error as! KeychainError, .failedDeletingPassword)
+        #expect(throws: KeychainError.failedDeletingPassword) {
+            try keychain.deleteGenericPassword(forService: "AppDab", password: genericPassword)
         }
     }
 
     // MARK: Keychain error
 
-    func testKeychainErrorDescription() {
-        XCTAssertEqual(KeychainError.noPasswordFound.description, "No password found in Keychain")
-        XCTAssertEqual(KeychainError.failedAddingPassword(errSecDuplicateItem).description, "Could not add password to Keychain")
-        XCTAssertEqual(KeychainError.wrongPassphraseForP12.description, "Wrong passphrase for encrypted certificate and private key")
-        XCTAssertEqual(KeychainError.errorImportingP12.description, "Could not import certificate and private key")
-        XCTAssertEqual(KeychainError.unknown(status: errSecNoSuchAttr).description, "Unknown error occurred when interacting with Keychain (OSStatus: \(errSecNoSuchAttr))")
+    @Test("Keychain error descriptions")
+    func keychainErrorDescription() {
+        #expect(KeychainError.noPasswordFound.description == "No password found in Keychain")
+        #expect(KeychainError.failedAddingPassword(errSecDuplicateItem).description == "Could not add password to Keychain")
+        #expect(KeychainError.wrongPassphraseForP12.description == "Wrong passphrase for encrypted certificate and private key")
+        #expect(KeychainError.errorImportingP12.description == "Could not import certificate and private key")
+        #expect(KeychainError.unknown(status: errSecNoSuchAttr).description == "Unknown error occurred when interacting with Keychain (OSStatus: \(errSecNoSuchAttr))")
     }
 }
 
-extension GenericPassword: Equatable {
-    public static func == (lhs: GenericPassword, rhs: GenericPassword) -> Bool {
-        lhs.account == rhs.account
-            && lhs.label == rhs.label
-            && lhs.generic == rhs.generic
-            && lhs.value == rhs.value
-    }
+extension Tag {
+    @Tag static var keychain: Self
 }

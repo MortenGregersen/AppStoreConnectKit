@@ -1,0 +1,38 @@
+{
+  "configurations" : [
+    {
+      "id" : "74C0676B-1A30-4DF7-96F0-6B90EF429710",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "ConnectAccountsTests",
+        "name" : "ConnectAccountsTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "ConnectCoreTests",
+        "name" : "ConnectCoreTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "ConnectKeychainTests",
+        "name" : "ConnectKeychainTests"
+      }
+    }
+  ],
+  "version" : 1
+}
