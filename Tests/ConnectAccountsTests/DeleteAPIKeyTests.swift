@@ -1,9 +1,10 @@
 @testable import ConnectAccounts
 import ConnectKeychain
+import ConnectTestSupport
 import Security
 import Testing
 
-@Suite("Delete API key", .tags(.apiKeys))
+@MainActor @Suite("Delete API key", .tags(.apiKeys))
 struct DeleteAPIKeyTests {
     let apiKey = try! APIKey(name: "Apple", keyId: "P9M252746H", issuerId: "82067982-6b3b-4a48-be4f-5b10b373c5f2", privateKey: """
     -----BEGIN PRIVATE KEY-----

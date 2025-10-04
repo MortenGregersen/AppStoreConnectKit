@@ -3,7 +3,7 @@ import Bagbutik_Core
 import Foundation
 import Testing
 
-@Suite("ErrorResponse.Errors parsing", .tags(.errors))
+@MainActor @Suite("ErrorResponse.Errors parsing", .tags(.errors))
 struct ParsedErrorResponseErrorsTests {
     @Test("Invalid Entity State")
     func invalidEntityState() {

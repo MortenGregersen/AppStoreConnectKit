@@ -8,49 +8,51 @@
 import ConnectKeychain
 import Foundation
 
-final class MockKeychain: KeychainProtocol, @unchecked Sendable {
+public final class MockKeychain: KeychainProtocol, @unchecked Sendable {
+    public init() {}
+
     // MARK: SecItemCopyMatching
 
-    var keychainLookup: @Sendable (_ query: CFDictionary, _ result: UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus = { _, _ in errSecSuccess }
+    public var keychainLookup: @Sendable (_ query: CFDictionary, _ result: UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus = { _, _ in errSecSuccess }
 
     // MARK: SecItemAdd
 
-    private(set) var parametersForAdd: [[String: Any]] = []
-    var returnStatusForAdd: OSStatus = errSecSuccess
+    public private(set) var parametersForAdd: [[String: Any]] = []
+    public var returnStatusForAdd: OSStatus = errSecSuccess
 
     // MARK: SecItemUpdate
 
-    private(set) var parametersForUpdate: [[String: Any]] = []
-    var returnStatusForUpdate: OSStatus = errSecSuccess
+    public private(set) var parametersForUpdate: [[String: Any]] = []
+    public var returnStatusForUpdate: OSStatus = errSecSuccess
 
     // MARK: SecItemDelete
 
-    private(set) var parametersForDelete: [[String: Any]] = []
-    var returnStatusForDelete: OSStatus = errSecSuccess
+    public private(set) var parametersForDelete: [[String: Any]] = []
+    public var returnStatusForDelete: OSStatus = errSecSuccess
 
     // MARK: SecKeyCreateRandomKey
 
-    private(set) var parametersForCreateRandomKey: [[String: Any]] = []
-    var createRandomKeyShouldSucceed = true
+    public private(set) var parametersForCreateRandomKey: [[String: Any]] = []
+    public var createRandomKeyShouldSucceed = true
 
     // MARK: SecKeyCopyPublicKey
 
-    var publicKeyToReturn: SecKey?
-    var copyPublicKeyShouldSucceed = true
+    public var publicKeyToReturn: SecKey?
+    public var copyPublicKeyShouldSucceed = true
 
     // MARK: SecKeyCopyExternalRepresentation
 
-    var copyPublicKeyDataShouldSucceed = true
+    public var copyPublicKeyDataShouldSucceed = true
 
     // MARK: Certificates in Keychain
 
-    var serialNumbersForCertificatesInKeychain: [String] = []
+    public var serialNumbersForCertificatesInKeychain: [String] = []
 
     // MARK: Generic passwords in Keychain
 
-    var genericPasswordsInKeychain: [GenericPassword] = []
+    public var genericPasswordsInKeychain: [GenericPassword] = []
 
-    lazy var keychain: Keychain = .init(
+    private lazy var keychain: Keychain = .init(
         secItemCopyMatching: keychainLookup,
         secItemAdd: { @Sendable parameters, _ in
             self.parametersForAdd.append(parameters as! [String: Any])
@@ -92,46 +94,46 @@ final class MockKeychain: KeychainProtocol, @unchecked Sendable {
         }
     )
 
-    func addCertificate(certificate: SecCertificate, named name: String) throws {
+    public func addCertificate(certificate: SecCertificate, named name: String) throws {
         try keychain.addCertificate(certificate: certificate, named: name)
     }
 
-    func hasCertificate(serialNumber: String) async throws -> Bool {
+    public func hasCertificate(serialNumber: String) async throws -> Bool {
         serialNumbersForCertificatesInKeychain.contains(serialNumber)
     }
 
-    func hasCertificates(serialNumbers: [String]) throws -> [String: Bool] {
+    public func hasCertificates(serialNumbers: [String]) throws -> [String: Bool] {
         serialNumbers.reduce(into: [:]) { result, serialNumber in
             result[serialNumber] = serialNumbersForCertificatesInKeychain.contains(serialNumber)
         }
     }
 
-    func createPrivateKey(labeled label: String) throws -> SecKey {
+    public func createPrivateKey(labeled label: String) throws -> SecKey {
         try keychain.createPrivateKey(labeled: label)
     }
 
-    func createPublicKey(from privateKey: SecKey) throws -> (key: SecKey, data: Data) {
+    public func createPublicKey(from privateKey: SecKey) throws -> (key: SecKey, data: Data) {
         try keychain.createPublicKey(from: privateKey)
     }
 
-    func getGenericPassword(forService service: String, account: String) throws -> GenericPassword? {
+    public func getGenericPassword(forService service: String, account: String) throws -> GenericPassword? {
         genericPasswordsInKeychain.first { $0.account == account }
     }
 
-    func listGenericPasswords(forService service: String) throws -> [GenericPassword] {
+    public func listGenericPasswords(forService service: String) throws -> [GenericPassword] {
         genericPasswordsInKeychain
     }
 
-    func addGenericPassword(forService service: String, password: GenericPassword) throws {
+    public func addGenericPassword(forService service: String, password: GenericPassword) throws {
         try keychain.addGenericPassword(forService: service, password: password)
         genericPasswordsInKeychain.append(password)
     }
 
-    func updateGenericPassword(forService service: String, password: GenericPassword) throws {
+    public func updateGenericPassword(forService service: String, password: GenericPassword) throws {
         try keychain.updateGenericPassword(forService: service, password: password)
     }
 
-    func deleteGenericPassword(forService service: String, password: GenericPassword) throws {
+    public func deleteGenericPassword(forService service: String, password: GenericPassword) throws {
         try keychain.deleteGenericPassword(forService: service, password: password)
     }
 }

@@ -2,7 +2,7 @@ import ConnectKeychain
 import Foundation
 import Testing
 
-@Suite("Keychain Tests", .tags(.keychain))
+@MainActor @Suite("Keychain Tests", .tags(.keychain))
 struct KeychainTests {
     // MARK: List generic passwords
 

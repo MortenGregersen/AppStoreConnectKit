@@ -1,5 +1,5 @@
 {
-  "originHash" : "6e22811f57848936a8179c4b04df64c8b352588e94eb02858e716544aa65e179",
+  "originHash" : "dce9adefc98f82f6e04320327b4d454cce2854d1eeb5c97af93bb018d2ee654d",
   "pins" : [
     {
       "identity" : "bagbutik",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "f0f6a113270fecc94e95f1b302be797f600fc599",
         "version" : "18.1.0"
+      }
+    },
+    {
+      "identity" : "certificatesigningrequest",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/cbaker6/CertificateSigningRequest",
+      "state" : {
+        "revision" : "457627f8ff57a721851ee14cc552d529c37c8329",
+        "version" : "1.30.0"
       }
     },
     {

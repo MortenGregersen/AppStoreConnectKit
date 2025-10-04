@@ -15,6 +15,13 @@
     {
       "target" : {
         "containerPath" : "container:",
+        "identifier" : "ConnectKeychainTests",
+        "name" : "ConnectKeychainTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
         "identifier" : "ConnectAccountsTests",
         "name" : "ConnectAccountsTests"
       }
@@ -29,8 +36,8 @@
     {
       "target" : {
         "containerPath" : "container:",
-        "identifier" : "ConnectKeychainTests",
-        "name" : "ConnectKeychainTests"
+        "identifier" : "ConnectProvisioningTests",
+        "name" : "ConnectProvisioningTests"
       }
     }
   ],
