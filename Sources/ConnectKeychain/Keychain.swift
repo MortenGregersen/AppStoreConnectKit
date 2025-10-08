@@ -20,7 +20,7 @@ public protocol KeychainProtocol {
     func deleteGenericPassword(forService service: String, password: GenericPassword) throws
 }
 
-public struct Keychain: KeychainProtocol {
+public struct Keychain: KeychainProtocol, Sendable {
     private let accessGroup: String
 
     public init(accessGroup: String) {
