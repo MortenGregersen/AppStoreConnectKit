@@ -30,7 +30,7 @@ public class APIKeyController {
         self.keychain = keychain
     }
 
-    public func loadAPIKeys() async throws {
+    public func loadAPIKeys() throws {
         let apiKeys = try keychain.listGenericPasswords(forService: service)
             .map { password -> APIKey in
                 guard let apiKey = try? APIKey(password: password)
