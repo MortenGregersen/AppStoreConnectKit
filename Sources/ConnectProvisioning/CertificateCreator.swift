@@ -42,7 +42,7 @@ public enum AddCertificateToKeychainError: LocalizedError, Equatable {
     public var errorDescription: String? { description }
 }
 
-public class CertificateCreator {
+public class CertificateManager {
     private let keychain: KeychainProtocol
     private let connectClient: AppStoreConnectClient
     private let buildCSRAndReturnString: (Data, SecKey, SecKey?) -> String?
@@ -64,7 +64,7 @@ public class CertificateCreator {
      Create a new certificate of a specific type.
 
      - Parameters:
-     - type: The type of certificate to create.
+       - type: The type of certificate to create.
      - Returns: The newly created `Certificate`.
      */
     @discardableResult
@@ -84,10 +84,11 @@ public class CertificateCreator {
      Add a certificate fetched from App Store Connect to the Keychain.
 
      - Parameters:
-     - certificate: The `Certificate` to add to the Keychain.
+       - certificate: The `Certificate` to add to the Keychain.
+       - fallbackName: The name to use if the certificate does not have a name.
      */
-    public func addCertificateToKeychain(certificate: Certificate, fallbackName: String? = nil) throws {
-        let name = certificate.attributes?.name ?? fallbackName ?? "Certificate \(Date())"
+    public func addCertificateToKeychain(certificate: Certificate, fallbackName: String = "Certificate \(Date())") throws {
+        let name = certificate.attributes?.name ?? fallbackName
         guard
             let certificateContent = certificate.attributes?.certificateContent,
             let certificateData = Data(base64Encoded: certificateContent),
