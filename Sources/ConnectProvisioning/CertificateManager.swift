@@ -1,5 +1,5 @@
 //
-//  CertificateCreator.swift
+//  CertificateManager.swift
 //  AppStoreConnectKit
 //
 //  Created by Morten Bjerg Gregersen on 03/10/2025.
@@ -91,9 +91,22 @@ public class CertificateManager {
         let name = certificate.attributes?.name ?? fallbackName
         guard
             let certificateContent = certificate.attributes?.certificateContent,
-            let certificateData = Data(base64Encoded: certificateContent),
-            let secCertificate = SecCertificateCreateWithData(nil, certificateData as CFData)
+            let certificateData = Data(base64Encoded: certificateContent)
         else {
+            throw AddCertificateToKeychainError.invalidOnlineCertificateData
+        }
+        try addCertificateToKeychain(certificateData: certificateData, name: name)
+    }
+
+    /**
+     Add a certificate fetched from App Store Connect to the Keychain.
+
+     - Parameters:
+       - certificateData: The raw certificate data to add to the Keychain..
+       - name: The name to use for the certificate in the Keychain.
+     */
+    public func addCertificateToKeychain(certificateData: Data, name: String) throws {
+        guard let secCertificate = SecCertificateCreateWithData(nil, certificateData as CFData) else {
             throw AddCertificateToKeychainError.invalidOnlineCertificateData
         }
         try keychain.addCertificate(certificate: secCertificate, named: name)

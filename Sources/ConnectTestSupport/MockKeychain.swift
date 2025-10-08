@@ -5,7 +5,7 @@
 //  Created by Morten Bjerg Gregersen on 03/10/2025.
 //
 
-import ConnectKeychain
+@testable import ConnectKeychain
 import Foundation
 
 public final class MockKeychain: KeychainProtocol, @unchecked Sendable {
@@ -43,7 +43,8 @@ public final class MockKeychain: KeychainProtocol, @unchecked Sendable {
     // MARK: KeychainProtocol
 
     public func addCertificate(certificate: SecCertificate, named name: String) throws {
-        // No-op in mock (does not persist or call Security)
+        let serialNumber = (SecCertificateCopySerialNumberData(certificate, nil)! as Data).hexadecimalString.lowercased()
+        serialNumbersForCertificatesInKeychain.append(serialNumber)
     }
 
     public func hasCertificate(serialNumber: String) async throws -> Bool {
