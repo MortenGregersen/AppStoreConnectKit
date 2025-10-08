@@ -17,14 +17,14 @@ public class CertificateCreator {
     private let connectClient: AppStoreConnectClient
     private let buildCSRAndReturnString: (Data, SecKey, SecKey?) -> String?
 
-    public convenience init(connectClient: AppStoreConnectClient) {
-        self.init(keychain: Keychain(), connectClient: connectClient)
+    public convenience init(keychain: KeychainProtocol, connectClient: AppStoreConnectClient) {
+        self.init(keychain: keychain, connectClient: connectClient, buildCSRAndReturnString: {
+            let signingRequest = CertificateSigningRequest()
+            return signingRequest.buildCSRAndReturnString($0, privateKey: $1, publicKey: $2)
+        })
     }
 
-    init(keychain: KeychainProtocol, connectClient: AppStoreConnectClient, buildCSRAndReturnString: @escaping (Data, SecKey, SecKey?) -> String? = {
-        let signingRequest = CertificateSigningRequest()
-        return signingRequest.buildCSRAndReturnString($0, privateKey: $1, publicKey: $2)
-    }) {
+    init(keychain: KeychainProtocol, connectClient: AppStoreConnectClient, buildCSRAndReturnString: @escaping (Data, SecKey, SecKey?) -> String?) {
         self.keychain = keychain
         self.buildCSRAndReturnString = buildCSRAndReturnString
         self.connectClient = connectClient

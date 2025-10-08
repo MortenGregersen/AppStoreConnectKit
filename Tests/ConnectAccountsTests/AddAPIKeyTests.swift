@@ -18,7 +18,7 @@ struct AddAPIKeyTests {
     func addAPIKey() async throws {
         // Arrange
         let mockKeychain = MockKeychain()
-        let controller = APIKeyController(service: "AppStoreConnectKit", keychain: mockKeychain)
+        let controller = APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
         #expect(controller.apiKeys == nil)
         #expect(controller.selectedAPIKey == nil)
         #expect(mockKeychain.genericPasswordsInKeychain.isEmpty)
@@ -39,7 +39,7 @@ struct AddAPIKeyTests {
         // Arrange
         let mockKeychain = MockKeychain()
         mockKeychain.returnStatusForAdd = errSecDuplicateItem
-        let controller = APIKeyController(service: "AppStoreConnectKit", keychain: mockKeychain)
+        let controller = APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
         var addedAPIKeys = [APIKey]()
         var cancellables = Set<AnyCancellable>()
         controller.didAddAPIKey.sink { addedAPIKeys.append($0) }.store(in: &cancellables)
@@ -59,7 +59,7 @@ struct AddAPIKeyTests {
         let status = errSecParam
         let mockKeychain = MockKeychain()
         mockKeychain.returnStatusForAdd = status
-        let controller = APIKeyController(service: "AppStoreConnectKit", keychain: mockKeychain)
+        let controller = APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
         var addedAPIKeys = [APIKey]()
         var cancellables = Set<AnyCancellable>()
         controller.didAddAPIKey.sink { addedAPIKeys.append($0) }.store(in: &cancellables)

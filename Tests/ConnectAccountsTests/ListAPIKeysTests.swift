@@ -22,7 +22,7 @@ struct ListAPIKeysTests {
         // Arrange
         let mockKeychain = MockKeychain()
         mockKeychain.genericPasswordsInKeychain = try [valid.getGenericPassword()]
-        let controller = await APIKeyController(service: "AppStoreConnectKit", keychain: mockKeychain)
+        let controller = await APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
         // Act
         try await controller.loadAPIKeys()
         // Assert
@@ -34,7 +34,7 @@ struct ListAPIKeysTests {
         // Arrange
         let mockKeychain = MockKeychain()
         mockKeychain.genericPasswordsInKeychain = [invalidGeneric]
-        let controller = await APIKeyController(service: "AppStoreConnectKit", keychain: mockKeychain)
+        let controller = await APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
         // Act
         await #expect(throws: APIKeyError.invalidAPIKeyFormat) {
             try await controller.loadAPIKeys()
@@ -48,7 +48,7 @@ struct ListAPIKeysTests {
         // Arrange
         let mockKeychain = MockKeychain()
         mockKeychain.genericPasswordsInKeychain = [invalidValue]
-        let controller = await APIKeyController(service: "AppStoreConnectKit", keychain: mockKeychain)
+        let controller = await APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
         // Act
         await #expect(throws: APIKeyError.invalidAPIKeyFormat) {
             try await controller.loadAPIKeys()

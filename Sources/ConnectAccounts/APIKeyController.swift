@@ -24,13 +24,9 @@ public class APIKeyController {
         set { UserDefaults.standard.set(newValue, forKey: "selected-api-key-id") }
     }
 
-    public convenience init(service: String) {
-        self.init(service: service, keychain: Keychain())
-    }
-
-    init(service: String, keychain: KeychainProtocol) {
-        precondition(!service.isEmpty, "Service must not be empty")
-        self.service = service
+    public init(keychainServiceName: String, keychain: KeychainProtocol) {
+        precondition(!keychainServiceName.isEmpty, "Service must not be empty")
+        self.service = keychainServiceName
         self.keychain = keychain
     }
 
@@ -56,7 +52,7 @@ public class APIKeyController {
         } catch let KeychainError.failedAddingPassword(status) {
             throw APIKeyError.failedAddingAPIKey(status)
         }
-        var apiKeys = self.apiKeys ?? []
+        var apiKeys = apiKeys ?? []
         if apiKeys.isEmpty {
             selectedAPIKey = apiKey
         }
@@ -78,7 +74,7 @@ public class APIKeyController {
 
 public extension APIKeyController {
     static func forPreview(apiKeys: [APIKey]? = nil) -> APIKeyController {
-        let controller = APIKeyController(service: "AppStoreConnectKit-Preview")
+        let controller = APIKeyController(keychainServiceName: "AppStoreConnectKit-Preview", keychain: Keychain.forPreview())
         controller.apiKeys = apiKeys
         return controller
     }

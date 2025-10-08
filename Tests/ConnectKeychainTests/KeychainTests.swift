@@ -1,4 +1,4 @@
-import ConnectKeychain
+@testable import ConnectKeychain
 import Foundation
 import Testing
 
@@ -17,7 +17,7 @@ struct KeychainTests {
         -----END PRIVATE KEY-----
         """.utf8))
         let service = "AppDab"
-        let keychain = Keychain(secItemCopyMatching: { _, result in
+        let keychain = Keychain(accessGroup: "Test", secItemCopyMatching: { _, result in
             result?.pointee = [[
                 kSecAttrLabel: genericPassword.label,
                 kSecAttrAccount: genericPassword.account,
@@ -34,13 +34,13 @@ struct KeychainTests {
 
     @Test("List generic passwords - No password found")
     func listGenericPasswords_NoPasswordFound() throws{
-        let keychain = Keychain(secItemCopyMatching: { _, _ in errSecItemNotFound })
+        let keychain = Keychain(accessGroup: "Test", secItemCopyMatching: { _, _ in errSecItemNotFound })
         #expect(try keychain.listGenericPasswords(forService: "AppDab") == [])
     }
 
     @Test("List generic passwords - Unknown error")
     func listGenericPasswords_Unknown() {
-        let keychain = Keychain(secItemCopyMatching: { _, _ in errSecParam })
+        let keychain = Keychain(accessGroup: "Test", secItemCopyMatching: { _, _ in errSecParam })
         #expect(throws: KeychainError.errorReadingFromKeychain(errSecParam)) {
             try keychain.listGenericPasswords(forService: "AppDab")
         }
@@ -48,7 +48,7 @@ struct KeychainTests {
 
     @Test("List generic passwords - Invalid password")
     func listGenericPasswords_InvalidPassword() throws {
-        let keychain = Keychain(secItemCopyMatching: { query, result in
+        let keychain = Keychain(accessGroup: "Test", secItemCopyMatching: { query, result in
             let query = query as NSDictionary
             if query[kSecReturnRef] != nil {
                 result?.pointee = ["item"] as CFTypeRef
@@ -66,14 +66,14 @@ struct KeychainTests {
 
     @Test("Add generic password")
     func addGenericPassword() throws {
-        let keychain = Keychain(secItemAdd: { _, _ in errSecSuccess })
+        let keychain = Keychain(accessGroup: "Test", secItemAdd: { _, _ in errSecSuccess })
         let genericPassword = GenericPassword(account: "", label: "", generic: Data(), value: Data())
         try keychain.addGenericPassword(forService: "AppDab", password: genericPassword)
     }
 
     @Test("Add generic password - Duplicate")
     func addGenericPassword_Duplicate() {
-        let keychain = Keychain(secItemAdd: { _, _ in errSecDuplicateItem })
+        let keychain = Keychain(accessGroup: "Test", secItemAdd: { _, _ in errSecDuplicateItem })
         let genericPassword = GenericPassword(account: "", label: "", generic: Data(), value: Data())
         #expect(throws: KeychainError.duplicatePassword) {
             try keychain.addGenericPassword(forService: "AppDab", password: genericPassword)
@@ -83,7 +83,7 @@ struct KeychainTests {
     @Test("Add generic password - Unknown error")
     func addGenericPassword_Unknown() {
         let status = errSecParam
-        let keychain = Keychain(secItemAdd: { _, _ in status })
+        let keychain = Keychain(accessGroup: "Test", secItemAdd: { _, _ in status })
         let genericPassword = GenericPassword(account: "", label: "", generic: Data(), value: Data())
         #expect(throws: KeychainError.failedAddingPassword(status)) {
             try keychain.addGenericPassword(forService: "AppDab", password: genericPassword)
@@ -94,14 +94,14 @@ struct KeychainTests {
 
     @Test("Update generic password")
     func updateGenericPassword() throws {
-        let keychain = Keychain(secItemUpdate: { _, _ in errSecSuccess })
+        let keychain = Keychain(accessGroup: "Test", secItemUpdate: { _, _ in errSecSuccess })
         let genericPassword = GenericPassword(account: "", label: "", generic: Data(), value: Data())
         try keychain.updateGenericPassword(forService: "AppDab", password: genericPassword)
     }
 
     @Test("Update generic password - Unknown error")
     func updateGenericPassword_Unknown() {
-        let keychain = Keychain(secItemUpdate: { _, _ in errSecParam })
+        let keychain = Keychain(accessGroup: "Test", secItemUpdate: { _, _ in errSecParam })
         let genericPassword = GenericPassword(account: "", label: "", generic: Data(), value: Data())
         #expect(throws: KeychainError.failedUpdatingPassword) {
             try keychain.updateGenericPassword(forService: "AppDab", password: genericPassword)
@@ -112,14 +112,14 @@ struct KeychainTests {
 
     @Test("Delete generic password")
     func deleteGenericPassword() throws {
-        let keychain = Keychain(secItemDelete: { _ in errSecSuccess })
+        let keychain = Keychain(accessGroup: "Test", secItemDelete: { _ in errSecSuccess })
         let genericPassword = GenericPassword(account: "", label: "", generic: Data(), value: Data())
         try keychain.deleteGenericPassword(forService: "AppDab", password: genericPassword)
     }
 
     @Test("Delete generic password - Unknown error")
     func deleteGenericPassword_Unknown() {
-        let keychain = Keychain(secItemDelete: { _ in errSecParam })
+        let keychain = Keychain(accessGroup: "Test", secItemDelete: { _ in errSecParam })
         let genericPassword = GenericPassword(account: "", label: "", generic: Data(), value: Data())
         #expect(throws: KeychainError.failedDeletingPassword) {
             try keychain.deleteGenericPassword(forService: "AppDab", password: genericPassword)

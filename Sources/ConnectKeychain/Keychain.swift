@@ -21,20 +21,50 @@ public protocol KeychainProtocol {
 }
 
 public struct Keychain: KeychainProtocol {
+    private let accessGroup: String
+
+    public init(accessGroup: String) {
+        self.accessGroup = accessGroup
+    }
+
+    init(accessGroup: String,
+         secItemCopyMatching: @Sendable @escaping (CFDictionary, UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus = SecItemCopyMatching,
+         secItemAdd: @Sendable @escaping (CFDictionary, UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus = SecItemAdd,
+         secItemUpdate: @Sendable @escaping (CFDictionary, CFDictionary) -> OSStatus = SecItemUpdate,
+         secItemDelete: @Sendable @escaping (CFDictionary) -> OSStatus = SecItemDelete,
+         secIdentityCopyCertificate: @Sendable @escaping (SecIdentity, UnsafeMutablePointer<SecCertificate?>) -> OSStatus = SecIdentityCopyCertificate,
+         secCertificateCopySerialNumberData: @Sendable @escaping (SecCertificate, UnsafeMutablePointer<Unmanaged<CFError>?>?) -> CFData? = SecCertificateCopySerialNumberData,
+         secKeyCreateRandomKey: @Sendable @escaping (CFDictionary, UnsafeMutablePointer<Unmanaged<CFError>?>?) -> SecKey? = SecKeyCreateRandomKey,
+         secKeyCopyPublicKey: @Sendable @escaping (SecKey) -> SecKey? = SecKeyCopyPublicKey,
+         secKeyCopyExternalRepresentation: @Sendable @escaping (SecKey, UnsafeMutablePointer<Unmanaged<CFError>?>?) -> CFData? = SecKeyCopyExternalRepresentation) {
+        self.accessGroup = accessGroup
+        self.secItemCopyMatching = secItemCopyMatching
+        self.secItemAdd = secItemAdd
+        self.secItemUpdate = secItemUpdate
+        self.secItemDelete = secItemDelete
+        self.secIdentityCopyCertificate = secIdentityCopyCertificate
+        self.secCertificateCopySerialNumberData = secCertificateCopySerialNumberData
+        self.secKeyCreateRandomKey = secKeyCreateRandomKey
+        self.secKeyCopyPublicKey = secKeyCopyPublicKey
+        self.secKeyCopyExternalRepresentation = secKeyCopyExternalRepresentation
+    }
+
     public func addCertificate(certificate: SecCertificate, named name: String) throws {
         let addquery: NSDictionary = [kSecClass: kSecClassCertificate,
                                       kSecValueRef: certificate,
                                       kSecAttrLabel: name]
-        let addStatus = SecItemAdd(addquery, nil)
+        let addStatus = secItemAdd(addquery, nil)
         guard addStatus == errSecSuccess || addStatus == errSecDuplicateItem else {
             throw AddCertificateToKeychainError.errorAddingCertificateToKeychain(status: addStatus)
         }
     }
 
     public func hasCertificate(serialNumber: String) async throws -> Bool {
-        try await Task.detached {
+        let secItemCopyMatching = self.secItemCopyMatching
+        let secIdentityCopyCertificate = self.secIdentityCopyCertificate
+        return try await Task.detached {
             var copyResult: CFTypeRef?
-            let statusCopyingIdentities = SecItemCopyMatching([
+            let statusCopyingIdentities = secItemCopyMatching([
                 kSecClass: kSecClassIdentity,
                 kSecMatchLimit: kSecMatchLimitAll,
                 kSecReturnRef: true,
@@ -47,7 +77,7 @@ public struct Keychain: KeychainProtocol {
             }
             let serialNumbersInKeychain: [String] = try identities.compactMap { identity in
                 var certificate: SecCertificate?
-                let statusCopyingCertificate = SecIdentityCopyCertificate(identity, &certificate)
+                let statusCopyingCertificate = secIdentityCopyCertificate(identity, &certificate)
                 guard statusCopyingCertificate == errSecSuccess, let certificate else {
                     throw KeychainError.errorReadingFromKeychain(statusCopyingCertificate)
                 }
@@ -59,7 +89,7 @@ public struct Keychain: KeychainProtocol {
 
     public func hasCertificates(serialNumbers: [String]) throws -> [String: Bool] {
         var copyResult: CFTypeRef?
-        let statusCopyingIdentities = SecItemCopyMatching([
+        let statusCopyingIdentities = secItemCopyMatching([
             kSecClass: kSecClassIdentity,
             kSecMatchLimit: kSecMatchLimitAll,
             kSecReturnRef: true,
@@ -74,7 +104,7 @@ public struct Keychain: KeychainProtocol {
         }
         let serialNumbersInKeychain: [String] = try identities.compactMap { identity in
             var certificate: SecCertificate?
-            let statusCopyingCertificate = SecIdentityCopyCertificate(identity, &certificate)
+            let statusCopyingCertificate = secIdentityCopyCertificate(identity, &certificate)
             guard statusCopyingCertificate == errSecSuccess, let certificate else {
                 throw KeychainError.errorReadingFromKeychain(statusCopyingCertificate)
             }
@@ -96,18 +126,18 @@ public struct Keychain: KeychainProtocol {
                  kSecAttrApplicationTag: tag,
              ]]
         var error: Unmanaged<CFError>?
-        guard let privateKey = SecKeyCreateRandomKey(parameters, &error) else {
+        guard let privateKey = secKeyCreateRandomKey(parameters, &error) else {
             throw error!.takeRetainedValue() as Error
         }
         return privateKey
     }
 
     public func createPublicKey(from privateKey: SecKey) throws -> (key: SecKey, data: Data) {
-        guard let publicKey = SecKeyCopyPublicKey(privateKey) else {
+        guard let publicKey = secKeyCopyPublicKey(privateKey) else {
             throw CreateCertificateError.errorCreatingPublicKey
         }
         var error: Unmanaged<CFError>?
-        guard let publicKeyData = SecKeyCopyExternalRepresentation(publicKey, &error) else {
+        guard let publicKeyData = secKeyCopyExternalRepresentation(publicKey, &error) else {
             throw CreateCertificateError.errorGettingPublicKeyData
         }
         return (key: publicKey, data: publicKeyData as Data)
@@ -129,12 +159,12 @@ public struct Keychain: KeychainProtocol {
             kSecReturnAttributes: true,
             kSecReturnData: true,
         ]
-        query.addEntries(from: Self.dataProtectionAttributes)
+        query.addEntries(from: dataProtectionAttributes)
         if let account {
             query[kSecAttrAccount] = account
         }
         var items: CFTypeRef?
-        let status = SecItemCopyMatching(query, &items)
+        let status = secItemCopyMatching(query, &items)
         guard status != errSecItemNotFound else { return [] }
         guard status == errSecSuccess, let items = items as? [Any] else {
             throw KeychainError.errorReadingFromKeychain(status)
@@ -160,8 +190,8 @@ public struct Keychain: KeychainProtocol {
             kSecAttrGeneric: password.generic,
             kSecValueData: password.value
         ]
-        query.addEntries(from: Self.dataProtectionAttributes)
-        let status = SecItemAdd(query, nil)
+        query.addEntries(from: dataProtectionAttributes)
+        let status = secItemAdd(query, nil)
         guard status != errSecDuplicateItem else {
             throw KeychainError.duplicatePassword
         }
@@ -176,14 +206,14 @@ public struct Keychain: KeychainProtocol {
             kSecAttrAccount: password.account,
             kSecAttrService: service,
         ]
-        query.addEntries(from: Self.dataProtectionAttributes)
+        query.addEntries(from: dataProtectionAttributes)
         let attributesToUpdate: NSMutableDictionary = [
             kSecAttrLabel: password.label,
             kSecAttrGeneric: password.generic,
             kSecValueData: password.value,
         ]
-        attributesToUpdate.addEntries(from: Self.dataProtectionAttributes)
-        let status = SecItemUpdate(query, attributesToUpdate)
+        attributesToUpdate.addEntries(from: dataProtectionAttributes)
+        let status = secItemUpdate(query, attributesToUpdate)
         guard status == errSecSuccess else {
             throw KeychainError.failedUpdatingPassword
         }
@@ -195,18 +225,34 @@ public struct Keychain: KeychainProtocol {
             kSecAttrAccount: password.account,
             kSecAttrService: service,
         ]
-        query.addEntries(from: Self.dataProtectionAttributes)
-        let status = SecItemDelete(query)
+        query.addEntries(from: dataProtectionAttributes)
+        let status = secItemDelete(query)
         guard status == errSecSuccess else {
             throw KeychainError.failedDeletingPassword
         }
     }
 
-    private static var dataProtectionAttributes: [AnyHashable: Any] {
+    private var dataProtectionAttributes: [AnyHashable: Any] {
         [
             kSecUseDataProtectionKeychain: true,
-            kSecAttrAccessGroup: "R7YA4RGA8U.app.AppDab.AppDab",
+            kSecAttrAccessGroup: accessGroup,
             kSecAttrSynchronizable: true,
         ]
+    }
+
+    var secItemCopyMatching = SecItemCopyMatching
+    var secItemAdd = SecItemAdd
+    var secItemUpdate = SecItemUpdate
+    var secItemDelete = SecItemDelete
+    var secIdentityCopyCertificate = SecIdentityCopyCertificate
+    var secCertificateCopySerialNumberData = SecCertificateCopySerialNumberData
+    var secKeyCreateRandomKey = SecKeyCreateRandomKey
+    var secKeyCopyPublicKey = SecKeyCopyPublicKey
+    var secKeyCopyExternalRepresentation = SecKeyCopyExternalRepresentation
+}
+
+public extension Keychain {
+    static func forPreview() -> Keychain {
+        .init(accessGroup: "AppStoreConnectKit.Keychain-Preview")
     }
 }
