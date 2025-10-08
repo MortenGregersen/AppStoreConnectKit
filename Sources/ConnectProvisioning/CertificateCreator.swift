@@ -12,6 +12,36 @@ import ConnectClient
 import ConnectKeychain
 import Foundation
 
+/// Error happening when creating certificates.
+public enum CreateCertificateError: LocalizedError, Equatable {
+    /// Could not create signing request.
+    case errorCreatingSigningRequest
+
+    public var description: String {
+        switch self {
+        case .errorCreatingSigningRequest:
+            "Could not create signing request"
+        }
+    }
+
+    public var errorDescription: String? { description }
+}
+
+/// Error happening when adding certificates to Keychain.
+public enum AddCertificateToKeychainError: LocalizedError, Equatable {
+    /// The certificate fetched from App Store Connect is incomplete.
+    case invalidOnlineCertificateData
+
+    public var description: String {
+        switch self {
+        case .invalidOnlineCertificateData:
+            "The certificate fetched from App Store Connect is incomplete"
+        }
+    }
+
+    public var errorDescription: String? { description }
+}
+
 public class CertificateCreator {
     private let keychain: KeychainProtocol
     private let connectClient: AppStoreConnectClient
@@ -48,6 +78,24 @@ public class CertificateCreator {
         let requestBody = CertificateCreateRequest(data: .init(attributes: .init(certificateType: type, csrContent: csrString)))
         let certificateResponse = try await connectClient.request(.createCertificateV1(requestBody: requestBody))
         return certificateResponse.data
+    }
+
+    /**
+     Add a certificate fetched from App Store Connect to the Keychain.
+
+     - Parameters:
+     - certificate: The `Certificate` to add to the Keychain.
+     */
+    public func addCertificateToKeychain(certificate: Certificate, fallbackName: String? = nil) throws {
+        let name = certificate.attributes?.name ?? fallbackName ?? "Certificate \(Date())"
+        guard
+            let certificateContent = certificate.attributes?.certificateContent,
+            let certificateData = Data(base64Encoded: certificateContent),
+            let secCertificate = SecCertificateCreateWithData(nil, certificateData as CFData)
+        else {
+            throw AddCertificateToKeychainError.invalidOnlineCertificateData
+        }
+        try keychain.addCertificate(certificate: secCertificate, named: name)
     }
 }
 

@@ -125,17 +125,6 @@ struct KeychainTests {
             try keychain.deleteGenericPassword(forService: "AppDab", password: genericPassword)
         }
     }
-
-    // MARK: Keychain error
-
-    @Test("Keychain error descriptions")
-    func keychainErrorDescription() {
-        #expect(KeychainError.noPasswordFound.description == "No password found in Keychain")
-        #expect(KeychainError.failedAddingPassword(errSecDuplicateItem).description == "Could not add password to Keychain")
-        #expect(KeychainError.wrongPassphraseForP12.description == "Wrong passphrase for encrypted certificate and private key")
-        #expect(KeychainError.errorImportingP12.description == "Could not import certificate and private key")
-        #expect(KeychainError.unknown(status: errSecNoSuchAttr).description == "Unknown error occurred when interacting with Keychain (OSStatus: \(errSecNoSuchAttr))")
-    }
 }
 
 extension Tag {

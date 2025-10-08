@@ -68,7 +68,7 @@ struct CreateCertificateTests {
         mockKeychain.copyPublicKeyShouldSucceed = false
         let certificateCreator = await CertificateCreator(keychain: mockKeychain, connectClient: .init(bagbutikService: mockBagbutikService))
         // Act/assert
-        await #expect(throws: CreateCertificateError.errorCreatingPublicKey) {
+        await #expect(throws: KeychainError.errorCreatingPublicKey) {
             try await certificateCreator.createCertificate(type: .development, keyNamePrefix: "AppStoreConnectKit")
         }
     }
@@ -86,7 +86,7 @@ struct CreateCertificateTests {
         mockKeychain.copyPublicKeyDataShouldSucceed = false
         let certificateCreator = await CertificateCreator(keychain: mockKeychain, connectClient: .init(bagbutikService: mockBagbutikService))
         // Act/assert
-        await #expect(throws: CreateCertificateError.errorGettingPublicKeyData) {
+        await #expect(throws: KeychainError.errorGettingPublicKeyData) {
             try await certificateCreator.createCertificate(type: .development, keyNamePrefix: "AppStoreConnectKit")
         }
     }

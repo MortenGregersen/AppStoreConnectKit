@@ -55,13 +55,13 @@ public struct Keychain: KeychainProtocol, Sendable {
                                       kSecAttrLabel: name]
         let addStatus = secItemAdd(addquery, nil)
         guard addStatus == errSecSuccess || addStatus == errSecDuplicateItem else {
-            throw AddCertificateToKeychainError.errorAddingCertificateToKeychain(status: addStatus)
+            throw KeychainError.errorAddingCertificateToKeychain(status: addStatus)
         }
     }
 
     public func hasCertificate(serialNumber: String) async throws -> Bool {
-        let secItemCopyMatching = self.secItemCopyMatching
-        let secIdentityCopyCertificate = self.secIdentityCopyCertificate
+        let secItemCopyMatching = secItemCopyMatching
+        let secIdentityCopyCertificate = secIdentityCopyCertificate
         return try await Task.detached {
             var copyResult: CFTypeRef?
             let statusCopyingIdentities = secItemCopyMatching([
@@ -73,7 +73,7 @@ public struct Keychain: KeychainProtocol, Sendable {
                 return false
             }
             guard statusCopyingIdentities == errSecSuccess, let identities = copyResult as? [SecIdentity] else {
-                throw CertificateError.errorReadingFromKeychain(statusCopyingIdentities)
+                throw KeychainError.errorReadingFromKeychain(statusCopyingIdentities)
             }
             let serialNumbersInKeychain: [String] = try identities.compactMap { identity in
                 var certificate: SecCertificate?
@@ -100,7 +100,7 @@ public struct Keychain: KeychainProtocol, Sendable {
             }
         }
         guard statusCopyingIdentities == errSecSuccess, let identities = copyResult as? [SecIdentity] else {
-            throw CertificateError.errorReadingFromKeychain(statusCopyingIdentities)
+            throw KeychainError.errorReadingFromKeychain(statusCopyingIdentities)
         }
         let serialNumbersInKeychain: [String] = try identities.compactMap { identity in
             var certificate: SecCertificate?
@@ -134,11 +134,11 @@ public struct Keychain: KeychainProtocol, Sendable {
 
     public func createPublicKey(from privateKey: SecKey) throws -> (key: SecKey, data: Data) {
         guard let publicKey = secKeyCopyPublicKey(privateKey) else {
-            throw CreateCertificateError.errorCreatingPublicKey
+            throw KeychainError.errorCreatingPublicKey
         }
         var error: Unmanaged<CFError>?
         guard let publicKeyData = secKeyCopyExternalRepresentation(publicKey, &error) else {
-            throw CreateCertificateError.errorGettingPublicKeyData
+            throw KeychainError.errorGettingPublicKeyData
         }
         return (key: publicKey, data: publicKeyData as Data)
     }

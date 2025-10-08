@@ -75,10 +75,10 @@ public final class MockKeychain: KeychainProtocol, @unchecked Sendable {
 
     public func createPublicKey(from privateKey: SecKey) throws -> (key: SecKey, data: Data) {
         guard copyPublicKeyShouldSucceed, let publicKey = SecKeyCopyPublicKey(privateKey) else {
-            throw CreateCertificateError.errorCreatingPublicKey
+            throw KeychainError.errorCreatingPublicKey
         }
         guard copyPublicKeyDataShouldSucceed else {
-            throw CreateCertificateError.errorGettingPublicKeyData
+            throw KeychainError.errorGettingPublicKeyData
         }
         guard let publicKeyData = publicKeyDataToReturn else {
             let error = CFErrorCreate(nil, "MockKeychain" as CFString, -1, [kCFErrorDescriptionKey as String: "No publicKeyDataToReturn injected"] as CFDictionary)! as Error
