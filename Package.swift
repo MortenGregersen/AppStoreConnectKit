@@ -39,7 +39,7 @@ let package = Package(
         // ConnectClient
         .target(name: "ConnectClient", dependencies: [.product(name: "Bagbutik", package: "Bagbutik")]),
         // ConnectProvisioning
-        .target(name: "ConnectProvisioning", dependencies: ["ConnectClient", "CertificateSigningRequest"]),
+        .target(name: "ConnectProvisioning", dependencies: ["ConnectClient", "ConnectKeychain", "CertificateSigningRequest"]),
         .testTarget(name: "ConnectProvisioningTests", dependencies: ["ConnectProvisioning", "ConnectTestSupport"]),
     ]
 )

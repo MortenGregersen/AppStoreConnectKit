@@ -4,7 +4,7 @@ import ConnectTestSupport
 import Foundation
 import Testing
 
-@MainActor @Suite("List API keys", .tags(.apiKeys))
+@Suite("List API keys", .tags(.apiKeys))
 struct ListAPIKeysTests {
     let valid = try! APIKey(name: "Apple", keyId: "P9M252746H", issuerId: "82067982-6b3b-4a48-be4f-5b10b373c5f2", privateKey: """
     -----BEGIN PRIVATE KEY-----
@@ -22,11 +22,11 @@ struct ListAPIKeysTests {
         // Arrange
         let mockKeychain = MockKeychain()
         mockKeychain.genericPasswordsInKeychain = try [valid.getGenericPassword()]
-        let controller = APIKeyController(service: "AppStoreConnectKit", keychain: mockKeychain)
+        let controller = await APIKeyController(service: "AppStoreConnectKit", keychain: mockKeychain)
         // Act
         try await controller.loadAPIKeys()
         // Assert
-        #expect(controller.apiKeys == [valid])
+        #expect(await controller.apiKeys == [valid])
     }
 
     @Test("List API Keys - Invalid issuer")
@@ -34,13 +34,13 @@ struct ListAPIKeysTests {
         // Arrange
         let mockKeychain = MockKeychain()
         mockKeychain.genericPasswordsInKeychain = [invalidGeneric]
-        let controller = APIKeyController(service: "AppStoreConnectKit", keychain: mockKeychain)
+        let controller = await APIKeyController(service: "AppStoreConnectKit", keychain: mockKeychain)
         // Act
         await #expect(throws: APIKeyError.invalidAPIKeyFormat) {
             try await controller.loadAPIKeys()
         }
         // Assert
-        #expect(controller.apiKeys == nil)
+        #expect(await controller.apiKeys == nil)
     }
 
     @Test("List API Keys - Invalid private key")
@@ -48,13 +48,13 @@ struct ListAPIKeysTests {
         // Arrange
         let mockKeychain = MockKeychain()
         mockKeychain.genericPasswordsInKeychain = [invalidValue]
-        let controller = APIKeyController(service: "AppStoreConnectKit", keychain: mockKeychain)
+        let controller = await APIKeyController(service: "AppStoreConnectKit", keychain: mockKeychain)
         // Act
         await #expect(throws: APIKeyError.invalidAPIKeyFormat) {
             try await controller.loadAPIKeys()
         }
         // Assert
-        #expect(controller.apiKeys == nil)
+        #expect(await controller.apiKeys == nil)
     }
 }
 

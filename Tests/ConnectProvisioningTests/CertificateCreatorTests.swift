@@ -7,6 +7,7 @@
 
 import Bagbutik_Models
 import Bagbutik_Provisioning
+import CertificateSigningRequest
 import ConnectKeychain
 @testable import ConnectProvisioning
 import ConnectTestSupport
@@ -25,7 +26,10 @@ struct CreateCertificateTests {
         let mockBagbutikService = MockBagbutikService()
         mockBagbutikService.setResponse(response, for: Endpoint(path: "/v1/certificates", method: .post))
         let mockKeychain = MockKeychain()
-        let certificateCreator = await CertificateCreator(keychain: mockKeychain, connectClient: .init(bagbutikService: mockBagbutikService))
+        mockKeychain.publicKeyDataToReturn = "some public key".data(using: .utf8)
+        let certificateCreator = await CertificateCreator(keychain: mockKeychain, connectClient: .init(bagbutikService: mockBagbutikService), buildCSRAndReturnString: { _, _, _ in
+            "valid csr"
+        })
         // Act
         let certificate = try await certificateCreator.createCertificate(type: .development, keyNamePrefix: "AppStoreConnectKit")
         // Assert
@@ -81,12 +85,10 @@ struct CreateCertificateTests {
         let mockKeychain = MockKeychain()
         mockKeychain.copyPublicKeyDataShouldSucceed = false
         let certificateCreator = await CertificateCreator(keychain: mockKeychain, connectClient: .init(bagbutikService: mockBagbutikService))
-        // Act
-        let error = await #expect(throws: NSError.self) {
+        // Act/assert
+        await #expect(throws: CreateCertificateError.errorGettingPublicKeyData) {
             try await certificateCreator.createCertificate(type: .development, keyNamePrefix: "AppStoreConnectKit")
         }
-        // Assert
-        #expect(error?.domain == "SecKeyCopyExternalRepresentation")
     }
 
     @Test("Create certificate - Unable to create signing request")
@@ -99,9 +101,10 @@ struct CreateCertificateTests {
         let mockBagbutikService = MockBagbutikService()
         mockBagbutikService.setResponse(response, for: Endpoint(path: "/v1/certificates", method: .post))
         let mockKeychain = MockKeychain()
-        let privateKey = try mockKeychain.createPrivateKey(labeled: "AppDabTest")
-        mockKeychain.publicKeyToReturn = SecKeyCopyPublicKey(privateKey)
-        let certificateCreator = await CertificateCreator(keychain: mockKeychain, connectClient: .init(bagbutikService: mockBagbutikService))
+        mockKeychain.publicKeyDataToReturn = "some invalid public key".data(using: .utf8)
+        let certificateCreator = await CertificateCreator(keychain: mockKeychain, connectClient: .init(bagbutikService: mockBagbutikService)) { _, _, _ in
+            nil
+        }
         // Act/assert
         await #expect(throws: CreateCertificateError.errorCreatingSigningRequest) {
             try await certificateCreator.createCertificate(type: .development, keyNamePrefix: "AppStoreConnectKit")

@@ -15,13 +15,18 @@ import Foundation
 public class CertificateCreator {
     private let keychain: KeychainProtocol
     private let connectClient: AppStoreConnectClient
+    private let buildCSRAndReturnString: (Data, SecKey, SecKey?) -> String?
 
     public convenience init(connectClient: AppStoreConnectClient) {
         self.init(keychain: Keychain(), connectClient: connectClient)
     }
 
-    init(keychain: KeychainProtocol, connectClient: AppStoreConnectClient) {
+    init(keychain: KeychainProtocol, connectClient: AppStoreConnectClient, buildCSRAndReturnString: @escaping (Data, SecKey, SecKey?) -> String? = {
+        let signingRequest = CertificateSigningRequest()
+        return signingRequest.buildCSRAndReturnString($0, privateKey: $1, publicKey: $2)
+    }) {
         self.keychain = keychain
+        self.buildCSRAndReturnString = buildCSRAndReturnString
         self.connectClient = connectClient
     }
 
@@ -37,12 +42,17 @@ public class CertificateCreator {
         let label = "\(keyNamePrefix) \(Date().timeIntervalSince1970)"
         let privateKey = try keychain.createPrivateKey(labeled: label)
         let publicKey = try keychain.createPublicKey(from: privateKey)
-        let csr = CertificateSigningRequest()
-        guard let csrString = csr.buildCSRAndReturnString(publicKey.data as Data, privateKey: privateKey, publicKey: publicKey.key) else {
+        guard let csrString = buildCSRAndReturnString(publicKey.data as Data, privateKey, publicKey.key) else {
             throw CreateCertificateError.errorCreatingSigningRequest
         }
         let requestBody = CertificateCreateRequest(data: .init(attributes: .init(certificateType: type, csrContent: csrString)))
         let certificateResponse = try await connectClient.request(.createCertificateV1(requestBody: requestBody))
         return certificateResponse.data
+    }
+}
+
+extension CertificateSigningRequest {
+    static func create() -> CertificateSigningRequest {
+        CertificateSigningRequest()
     }
 }

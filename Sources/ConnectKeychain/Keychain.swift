@@ -134,7 +134,7 @@ public struct Keychain: KeychainProtocol {
         }
         var error: Unmanaged<CFError>?
         guard let publicKeyData = secKeyCopyExternalRepresentation(publicKey, &error) else {
-            throw error!.takeRetainedValue() as Error
+            throw CreateCertificateError.errorGettingPublicKeyData
         }
         return (key: publicKey, data: publicKeyData as Data)
     }
@@ -247,3 +247,4 @@ public struct Keychain: KeychainProtocol {
     var secKeyCopyExternalRepresentation = SecKeyCopyExternalRepresentation
     var dataLoader = Data.init(contentsOf:options:)
 }
+
