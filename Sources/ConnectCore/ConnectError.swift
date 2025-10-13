@@ -8,7 +8,7 @@
 import Foundation
 
 /// A mapped error for easier logging.
-public enum ConnectError: Error, Equatable {
+public enum ConnectError: Error, Equatable, LocalizedError {
     /// A simple error with just a message.
     case simpleError(message: String)
     /// An error which has one or more associated/sub errors.
@@ -18,14 +18,16 @@ public enum ConnectError: Error, Equatable {
     /// An unhandled error with a message and a stack trace.
     case unhandledError(message: String, stackTrace: String)
 
+    public var errorDescription: String? { message }
+
     public var message: String {
         switch self {
         case .simpleError(let message), .unhandledError(let message, _):
-            return message
+            message
         case .cancelled:
-            return "Cancelled"
+            "Cancelled"
         case .errorWithAssociatedErrors(let message, associatedMessages: let associatedMessages):
-            return message + "\n" + associatedMessages.map { "• \($0)" }.joined(separator: "\n")
+            message + "\n" + associatedMessages.map { "• \($0)" }.joined(separator: "\n")
         }
     }
 }
