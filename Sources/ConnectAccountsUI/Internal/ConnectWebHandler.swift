@@ -217,7 +217,7 @@ final class ConnectWebHandler {
     }
 }
 
-@available(macOS 26.0, *)
+@available(macOS 26.0, iOS 26.0, *)
 extension ConnectWebHandler: WebPage.NavigationDeciding {
     func decidePolicy(for response: WebPage.NavigationResponse) async -> WKNavigationResponsePolicy {
         if response.response.url?.scheme == "data",
