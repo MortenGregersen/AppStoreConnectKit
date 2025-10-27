@@ -16,6 +16,7 @@ let package = Package(
         .library(name: "ConnectCore", targets: ["ConnectCore"]),
         .library(name: "ConnectKeychain", targets: ["ConnectKeychain"]),
         .library(name: "ConnectAccounts", targets: ["ConnectAccounts"]),
+        .library(name: "ConnectAccountsUI", targets: ["ConnectAccountsUI"]),
         .library(name: "ConnectClient", targets: ["ConnectClient"]),
         .library(name: "ConnectProvisioning", targets: ["ConnectProvisioning"]),
     ],
@@ -36,6 +37,8 @@ let package = Package(
         // ConnectAccounts
         .target(name: "ConnectAccounts", dependencies: ["ConnectKeychain", .product(name: "Bagbutik", package: "Bagbutik")]),
         .testTarget(name: "ConnectAccountsTests", dependencies: ["ConnectAccounts", "ConnectTestSupport"]),
+        // ConnectAccountsUI
+        .target(name: "ConnectAccountsUI", dependencies: ["ConnectAccounts", .product(name: "Bagbutik", package: "Bagbutik")]),
         // ConnectClient
         .target(name: "ConnectClient", dependencies: [.product(name: "Bagbutik", package: "Bagbutik")]),
         // ConnectProvisioning
