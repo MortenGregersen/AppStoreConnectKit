@@ -207,6 +207,11 @@ public struct GenerateAPIKeyView: View {
                     }
                 }
                 #endif
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(role: .cancel) {
+                        dismiss()
+                    }
+                }
             }
             .alert("Can't create key", isPresented: $connectWebHandler.showsIndividualKeyNotSupportedAlert) {
                 Button("OK", role: .cancel) {}

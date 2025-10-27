@@ -12,22 +12,19 @@ let package = Package(
         .visionOS(.v2)
     ],
     products: [
-        .library(name: "ConnectBagbutikFormatting", targets: ["ConnectBagbutikFormatting"]),
         .library(name: "ConnectCore", targets: ["ConnectCore"]),
         .library(name: "ConnectKeychain", targets: ["ConnectKeychain"]),
         .library(name: "ConnectAccounts", targets: ["ConnectAccounts"]),
         .library(name: "ConnectAccountsUI", targets: ["ConnectAccountsUI"]),
         .library(name: "ConnectClient", targets: ["ConnectClient"]),
         .library(name: "ConnectProvisioning", targets: ["ConnectProvisioning"]),
+        .library(name: "ConnectBagbutikFormatting", targets: ["ConnectBagbutikFormatting"]),
     ],
     dependencies: [
         .package(url: "https://github.com/MortenGregersen/Bagbutik", from: "18.1.0"),
         .package(url: "https://github.com/cbaker6/CertificateSigningRequest", from: "1.30.0"),
     ],
     targets: [
-        // ConnectBagbutikFormatting
-        .target(name: "ConnectBagbutikFormatting", dependencies: [.product(name: "Bagbutik", package: "Bagbutik")]),
-        .target(name: "ConnectTestSupport", dependencies: ["ConnectKeychain", "ConnectClient"]),
         // ConnectCore
         .target(name: "ConnectCore", dependencies: ["ConnectBagbutikFormatting"]),
         .testTarget(name: "ConnectCoreTests", dependencies: ["ConnectCore"]),
@@ -49,5 +46,9 @@ let package = Package(
             .product(name: "Bagbutik", package: "Bagbutik")
         ]),
         .testTarget(name: "ConnectProvisioningTests", dependencies: ["ConnectProvisioning", "ConnectTestSupport"]),
+        // ConnectBagbutikFormatting
+        .target(name: "ConnectBagbutikFormatting", dependencies: [.product(name: "Bagbutik", package: "Bagbutik")]),
+        // ConnectTestSupport
+        .target(name: "ConnectTestSupport", dependencies: ["ConnectKeychain", "ConnectClient"]),
     ]
 )
