@@ -339,23 +339,12 @@ public struct GenerateAPIKeyView: View {
 
 #Preview {
     if #available(macOS 26.0, iOS 26.0, *) {
-        GenerateAPIKeyView(apiKeyValidator: PreviewAPIKeyValidator(didValidateKey: { _ in }))
+        GenerateAPIKeyView(apiKeyValidator: PreviewAPIKeyValidator())
     } else {
-        Text("Only available on macOS/iOS 26.")
+        Text("Only available on macOS/iOS 26+.")
     }
 }
 
 private class PreviewAPIKeyValidator: APIKeyValidator {
-    let didValidateKey: (APIKeyCredentials) -> Void
-
-    init(didValidateKey: @escaping (APIKeyCredentials) -> Void) {
-        self.didValidateKey = didValidateKey
-    }
-
-    nonisolated(nonsending)
-    func validateKey(credentials: APIKeyCredentials) async throws {
-        // Simulate some async work
-        try await Task.sleep(for: .seconds(1))
-        didValidateKey(credentials)
-    }
+    nonisolated(nonsending) func validateKey(credentials: APIKeyCredentials) async throws {}
 }
