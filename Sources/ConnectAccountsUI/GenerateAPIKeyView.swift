@@ -11,9 +11,9 @@ import WebKit
 @available(macOS 26.0, iOS 26.0, *)
 /// A SwiftUI view for generating an API key via App Store Connect.
 public struct GenerateAPIKeyView: View {
-    @State private var connectWebHandler: ConnectWebHandler
-    @State private var page: WebPage
-    @State private var showsInspector: Bool
+    @State private var connectWebHandler = ConnectWebHandler()
+    @State private var page: WebPage?
+    @State private var showsInspector = false
     @State private var validateTaskId: UUID?
     @State private var isValidatingKey = false
     @State private var validationError: Error?
@@ -29,24 +29,6 @@ public struct GenerateAPIKeyView: View {
         - dismissOnValidationSuccess: A Boolean indicating whether to dismiss the view upon successful validation.
      */
     public init(apiKeyValidator: APIKeyValidator, dismissOnValidationSuccess: Bool = true) {
-        let connectWebHandler = ConnectWebHandler()
-        _connectWebHandler = State(initialValue: connectWebHandler)
-        let configuration = WebPage.Configuration()
-        let url = URL(string: "https://appstoreconnect.apple.com")!
-        let page = WebPage(configuration: configuration, navigationDecider: connectWebHandler)
-        #if DEBUG
-        page.isInspectable = true
-        #endif
-        page.load(url)
-        connectWebHandler.callJavaScript = { script in
-            try await page.callJavaScript(script)
-        }
-        _page = State(initialValue: page)
-        #if os(macOS)
-        _showsInspector = State(initialValue: true)
-        #else
-        _showsInspector = State(initialValue: false)
-        #endif
         self.apiKeyValidator = apiKeyValidator
         self.dismissOnValidationSuccess = dismissOnValidationSuccess
     }
@@ -72,18 +54,18 @@ public struct GenerateAPIKeyView: View {
                         }
                         .disabled(!canGoForward)
                     }
-                    Text(page.url?.absoluteString ?? "")
+                    Text(page?.url?.absoluteString ?? "")
                         .lineLimit(1)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity)
                     Button {
-                        page.reload()
+                        page?.reload()
                     } label: {
                         Label("Reload", systemImage: "arrow.clockwise")
                             .labelStyle(.iconOnly)
                     }
                     .buttonStyle(.borderless)
-                    .disabled(page.isLoading)
+                    .disabled(page?.isLoading ?? true)
                     Button {
                         showsInspector.toggle()
                     } label: {
@@ -94,7 +76,7 @@ public struct GenerateAPIKeyView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 8)
                 .overlay(alignment: .bottom) {
-                    if page.estimatedProgress < 1.0 {
+                    if let page, page.estimatedProgress < 1.0 {
                         GeometryReader { proxy in
                             ZStack(alignment: .leading) {
                                 Rectangle()
@@ -111,62 +93,67 @@ public struct GenerateAPIKeyView: View {
                     }
                 }
                 #endif
-                WebView(page)
-                    .overlay(alignment: .bottom) {
-                        if isValidatingKey || validationError != nil {
-                            VStack {
-                                if isValidatingKey {
-                                    ProgressView("Validating API Key...")
-                                        .padding()
-                                } else if let validationError {
-                                    Text("An error occurred")
-                                        .font(.headline)
-                                    Text(validationError.localizedDescription)
-                                    HStack {
-                                        Button("Cancel", role: .cancel) {
-                                            self.validationError = nil
+                if let page {
+                    WebView(page)
+                        .overlay(alignment: .bottom) {
+                            if isValidatingKey || validationError != nil {
+                                VStack {
+                                    if isValidatingKey {
+                                        ProgressView("Validating API Key...")
+                                            .padding()
+                                    } else if let validationError {
+                                        Text("An error occurred")
+                                            .font(.headline)
+                                        Text(validationError.localizedDescription)
+                                        HStack {
+                                            Button("Cancel", role: .cancel) {
+                                                self.validationError = nil
+                                            }
+                                            Button("Try again") {
+                                                self.validationError = nil
+                                                validateTaskId = UUID()
+                                            }
+                                            .buttonStyle(.borderedProminent)
                                         }
-                                        Button("Try again") {
-                                            self.validationError = nil
-                                            validateTaskId = UUID()
-                                        }
-                                        .buttonStyle(.borderedProminent)
                                     }
                                 }
-                            }
-                            .multilineTextAlignment(.center)
-                            .padding()
-                            .padding(.horizontal, 8)
-                            .background(RoundedRectangle(cornerRadius: 16)
-                                .fill(Material.ultraThin)
-                            )
-                            .padding()
-                        } else if !showsInspector, let currentStep = connectWebHandler.currentStep {
-                            VStack {
-                                Text(currentStep.instruction)
-                                    .font(.title)
-                                if let notes = currentStep.notes(keyType: connectWebHandler.keyType) {
-                                    Text(notes)
+                                .multilineTextAlignment(.center)
+                                .padding()
+                                .padding(.horizontal, 8)
+                                .background(RoundedRectangle(cornerRadius: 16)
+                                    .fill(Material.ultraThin)
+                                )
+                                .padding()
+                            } else if !showsInspector, let currentStep = connectWebHandler.currentStep {
+                                VStack {
+                                    Text(currentStep.instruction)
+                                        .font(.title)
+                                    if let notes = currentStep.notes(keyType: connectWebHandler.keyType) {
+                                        Text(notes)
+                                    }
+                                    if currentStep == .copyKeyId {
+                                        TextField("Key ID", text: $connectWebHandler.keyId)
+                                            .textFieldStyle(.roundedBorder)
+                                            .frame(maxWidth: 200)
+                                    } else if currentStep == .copyIssuerId {
+                                        TextField("Issuer ID", text: $connectWebHandler.issuerId)
+                                            .textFieldStyle(.roundedBorder)
+                                            .frame(maxWidth: 300)
+                                    }
                                 }
-                                if currentStep == .copyKeyId {
-                                    TextField("Key ID", text: $connectWebHandler.keyId)
-                                        .textFieldStyle(.roundedBorder)
-                                        .frame(maxWidth: 200)
-                                } else if currentStep == .copyIssuerId {
-                                    TextField("Issuer ID", text: $connectWebHandler.issuerId)
-                                        .textFieldStyle(.roundedBorder)
-                                        .frame(maxWidth: 300)
-                                }
+                                .multilineTextAlignment(.center)
+                                .padding()
+                                .padding(.horizontal, 8)
+                                .background(RoundedRectangle(cornerRadius: 16)
+                                    .fill(Material.ultraThin)
+                                )
+                                .padding()
                             }
-                            .multilineTextAlignment(.center)
-                            .padding()
-                            .padding(.horizontal, 8)
-                            .background(RoundedRectangle(cornerRadius: 16)
-                                .fill(Material.ultraThin)
-                            )
-                            .padding()
                         }
-                    }
+                } else {
+                    ProgressView("Loading App Store Connect…")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
             }
             .navigationTitle("App Store Connect")
             .toolbarTitleDisplayMode(.inline)
@@ -187,12 +174,12 @@ public struct GenerateAPIKeyView: View {
                     .disabled(!canGoForward)
                 }
                 ToolbarItem {
-                    if page.isLoading {
+                    if let page, page.isLoading {
                         ProgressView()
                             .scaleEffect(0.5, anchor: .center)
                     } else {
                         Button {
-                            page.reload()
+                            page?.reload()
                         } label: {
                             Label("Reload", systemImage: "arrow.clockwise")
                         }
@@ -216,7 +203,7 @@ public struct GenerateAPIKeyView: View {
             .alert("Can't create key", isPresented: $connectWebHandler.showsIndividualKeyNotSupportedAlert) {
                 Button("OK", role: .cancel) {}
                 Button("Create Team Key") {
-                    page.load(URL(string: "https://appstoreconnect.apple.com/access/users")!)
+                    page?.load(URL(string: "https://appstoreconnect.apple.com/access/users")!)
                     connectWebHandler.keyType = .team
                 }
             } message: {
@@ -228,11 +215,12 @@ public struct GenerateAPIKeyView: View {
                 Text("Your account is not allowed to create team API keys. Contact your Account Holder to enable it.")
             }
             .animation(.default, value: connectWebHandler.currentStep)
-            .task(id: page.url) {
-                guard let url = page.url else { return }
+            .task(id: page?.url) {
+                guard let url = page?.url else { return }
                 await connectWebHandler.urlChanged(newUrl: url)
             }
             .task {
+                await setupWebPageIfNeeded()
                 await startObservingEvents()
             }
             .task(id: validateTaskId) {
@@ -260,6 +248,7 @@ public struct GenerateAPIKeyView: View {
             .onChange(of: connectWebHandler.privateKey) { _, _ in
                 validateTaskId = UUID()
             }
+            .onDisappear { page = nil }
         }
         .inspector(isPresented: $showsInspector) {
             NavigationStack {
@@ -301,20 +290,43 @@ public struct GenerateAPIKeyView: View {
         }
     }
 
-    private var canGoBack: Bool { !page.backForwardList.backList.isEmpty }
+    @MainActor
+    private func setupWebPageIfNeeded() async {
+        guard page == nil else { return }
+        var configuration = WebPage.Configuration()
+        configuration.websiteDataStore = .default()
+        let page = WebPage(configuration: configuration, navigationDecider: connectWebHandler)
+        #if DEBUG
+        page.isInspectable = true
+        #endif
+        connectWebHandler.callJavaScript = { try await page.callJavaScript($0) }
+        page.load(URL(string: "https://appstoreconnect.apple.com")!)
+        self.page = page
+    }
+
+    private var canGoBack: Bool {
+        guard let page else { return false }
+        return !page.backForwardList.backList.isEmpty
+    }
+
     private func goBack() {
-        guard let item = page.backForwardList.backList.last else { return }
+        guard let page, let item = page.backForwardList.backList.last else { return }
         page.load(item)
     }
 
-    private var canGoForward: Bool { !page.backForwardList.forwardList.isEmpty }
+    private var canGoForward: Bool {
+        guard let page else { return false }
+        return !page.backForwardList.forwardList.isEmpty
+    }
+
     private func goForward() {
-        guard let item = page.backForwardList.forwardList.first else { return }
+        guard let page, let item = page.backForwardList.forwardList.first else { return }
         page.load(item)
     }
 
     @MainActor
     private func startObservingEvents() async {
+        guard let page else { return }
         do {
             for try await event in page.navigations {
                 if event == .finished {
@@ -344,6 +356,6 @@ private class PreviewAPIKeyValidator: APIKeyValidator {
     func validateKey(credentials: APIKeyCredentials) async throws {
         // Simulate some async work
         try await Task.sleep(for: .seconds(1))
-        await didValidateKey(credentials)
+        didValidateKey(credentials)
     }
 }
