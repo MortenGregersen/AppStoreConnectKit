@@ -1,0 +1,37 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  build-apple:
+    name: Build and Test (Apple platforms)
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        swift: ["5.10", "6.0", "6.1", "6.2"]
+    steps:
+    - uses: vapor/swiftly-action@v0.2
+      with:
+        toolchain: ${{ matrix.swift }}
+    - uses: actions/checkout@v4
+    - name: Test
+      run: swift test -v
+  build-linux:
+    name: Build and Test (Linux) - Swift ${{ matrix.swift }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        swift: ["5.10", "6.0", "6.1", "6.2"]
+    steps:
+    - uses: vapor/swiftly-action@v0.2
+      with:
+        toolchain: ${{ matrix.swift }}
+    - uses: actions/checkout@v4
+    - name: Test
+      run: swift test -v
