@@ -193,6 +193,7 @@ public struct GenerateAPIKeyView: View {
                         Label("Toggle steps list", systemImage: "list.bullet")
                     }
                 }
+                ToolbarSpacer()
                 #endif
                 ToolbarItem(placement: .cancellationAction) {
                     Button(role: .cancel) {
@@ -280,8 +281,10 @@ public struct GenerateAPIKeyView: View {
                     .navigationTitle("Steps")
                     .toolbar {
                         #if os(iOS)
-                        Button(role: .close) {
-                            showsInspector = false
+                        if UIDevice.current.userInterfaceIdiom == .phone {
+                            Button(role: .close) {
+                                showsInspector = false
+                            }
                         }
                         #endif
                     }
