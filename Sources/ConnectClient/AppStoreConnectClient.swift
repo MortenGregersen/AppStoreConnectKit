@@ -8,7 +8,7 @@
 import Bagbutik_Core
 import Foundation
 
-@Observable @MainActor
+@Observable
 public class AppStoreConnectClient {
     private let bagbutikService: BagbutikServiceProtocol
 
@@ -52,14 +52,14 @@ public extension AppStoreConnectClient {
 }
 
 public protocol BagbutikServiceProtocol {
-    nonisolated(nonsending) func request<T>(_ request: Request<T, ErrorResponse>) async throws -> T
+    func request<T>(_ request: Request<T, ErrorResponse>) async throws -> T
         where T: Decodable & Sendable
-    @discardableResult nonisolated(nonsending) func request(_ request: Request<EmptyResponse, ErrorResponse>) async throws -> EmptyResponse
-    nonisolated(nonsending) func requestAllPages<T>(_ request: Request<T, ErrorResponse>) async throws -> (responses: [T], data: [T.Data])
+    @discardableResult func request(_ request: Request<EmptyResponse, ErrorResponse>) async throws -> EmptyResponse
+    func requestAllPages<T>(_ request: Request<T, ErrorResponse>) async throws -> (responses: [T], data: [T.Data])
         where T: Decodable & PagedResponse & Sendable
-    nonisolated(nonsending) func requestNextPage<T>(for response: T) async throws -> T?
+    func requestNextPage<T>(for response: T) async throws -> T?
         where T: Decodable & PagedResponse & Sendable
-    nonisolated(nonsending) func requestAllPages<T>(for response: T) async throws -> (responses: [T], data: [T.Data])
+    func requestAllPages<T>(for response: T) async throws -> (responses: [T], data: [T.Data])
         where T: Decodable & PagedResponse & Sendable, T.Data: Sendable
 }
 
