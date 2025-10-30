@@ -15,7 +15,6 @@ jobs:
     strategy:
       matrix:
         xcode-version:
-          - "16.4"
           - "26.0.1"
           - "26.1"
     env:
