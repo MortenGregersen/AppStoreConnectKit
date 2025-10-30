@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-and-test:
-    name: Xcode ${{ matrix.xcode-version }}
+    name: Xcode ${{ matrix.xcode-version }} / ${{ matrix.target }}
     runs-on: macos-latest
     strategy:
       matrix:
