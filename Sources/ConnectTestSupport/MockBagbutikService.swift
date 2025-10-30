@@ -9,7 +9,7 @@ import Bagbutik_Core
 import ConnectClient
 import Foundation
 
-public class MockBagbutikService: BagbutikServiceProtocol {
+public final class MockBagbutikService: @unchecked Sendable, BagbutikServiceProtocol {
     private(set) var responseDataByEndpoint = [Endpoint: Data]()
     private(set) var errorResponseDataByEndpoint = [Endpoint: Data]()
     private(set) var requestBodyJsons = [String]()
@@ -62,7 +62,7 @@ public class MockBagbutikService: BagbutikServiceProtocol {
     }
 }
 
-public struct Endpoint: Hashable {
+public struct Endpoint: Hashable, Sendable {
     let path: String
     let method: HTTPMethod
 
