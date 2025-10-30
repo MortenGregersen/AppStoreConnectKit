@@ -9,7 +9,7 @@ import Bagbutik_Core
 import Foundation
 
 @Observable
-public class AppStoreConnectClient {
+public final class AppStoreConnectClient: Sendable {
     private let bagbutikService: BagbutikServiceProtocol
 
     public convenience init(jwt: JWT, fetchData: @escaping @Sendable FetchData) {
