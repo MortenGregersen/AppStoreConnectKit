@@ -36,6 +36,6 @@ jobs:
             xcodebuild test \
               -scheme AppStoreConnectKit-Package \
               -sdk iphonesimulator \
-              -destination "platform=iOS Simulator,name=iPhone 17,OS=${{ matrix.version}}" \
+              -destination "platform=iOS Simulator,name=iPhone 17,OS=26.0" \
               CODE_SIGNING_ALLOWED=NO
           fi
