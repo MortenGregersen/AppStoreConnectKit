@@ -10,18 +10,18 @@ on:
 
 jobs:
   build-and-test:
-    name: Xcode ${{ matrix.xcode-version }} / ${{ matrix.target }}
+    name: Xcode ${{ matrix.version }} / ${{ matrix.target }} ${{ matrix.version }}
     runs-on: macos-latest
     strategy:
       matrix:
-        xcode-version:
-          - "26.0.1"
+        version:
+          - "26.0"
           - "26.1"
         target:
           - "macOS"
           - "iOS"
     env:
-      DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode-version }}.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/Xcode_${{ matrix.version }}.app/Contents/Developer
     steps:
       - uses: actions/checkout@v4
       - name: Print Xcode & Swift Version
@@ -36,6 +36,6 @@ jobs:
             xcodebuild test \
               -scheme AppStoreConnectKit-Package \
               -sdk iphonesimulator \
-              -destination "platform=iOS Simulator,name=iPhone 17,OS=26.0" \
+              -destination "platform=iOS Simulator,name=iPhone 17,OS=${{ matrix.xcoe-version}}" \
               CODE_SIGNING_ALLOWED=NO
           fi
