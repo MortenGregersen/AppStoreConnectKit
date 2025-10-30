@@ -17,14 +17,25 @@ jobs:
         xcode-version:
           - "26.0.1"
           - "26.1"
+        target:
+          - "macOS"
+          - "iOS"
     env:
       DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode-version }}.app/Contents/Developer
     steps:
       - uses: actions/checkout@v4
-      - name: Print environment info
+      - name: Print Xcode & Swift Version
         run: |
-          echo "Using Xcode version: ${{ matrix.xcode-version }}"
           xcodebuild -version
           swift --version
-      - name: Build & Test
-        run: swift test -v
+      - name: Build & Test for ${{ matrix.target }}
+        run: |
+          if [ "${{ matrix.target }}" == "macOS" ]; then
+            swift test -v
+          else
+            xcodebuild test \
+              -scheme AppStoreConnectKit-Package \
+              -sdk iphonesimulator \
+              -destination "platform=iOS Simulator,name=iPhone 17,OS=26.0" \
+              CODE_SIGNING_ALLOWED=NO
+          fi
