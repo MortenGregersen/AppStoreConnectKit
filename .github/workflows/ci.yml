@@ -15,8 +15,7 @@ jobs:
     strategy:
       matrix:
         version:
-          - "26.0"
-          - "26.1"
+          - "26.0.1"
         target:
           - "macOS"
           - "iOS"
