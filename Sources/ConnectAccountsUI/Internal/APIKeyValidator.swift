@@ -6,11 +6,13 @@
 //
 
 /// Protocol for validating API key credentials.
+@MainActor
 public protocol APIKeyValidator: AnyObject {
     /**
      Validates the provided API key credentials.
 
      - Parameter credentials: The API key credentials to validate.
      */
-    nonisolated(nonsending) func validateKey(credentials: APIKeyCredentials) async throws
+    func validateKey(credentials: APIKeyCredentials) async throws
 }
+

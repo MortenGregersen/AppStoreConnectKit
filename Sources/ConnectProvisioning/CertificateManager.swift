@@ -67,8 +67,8 @@ public class CertificateManager {
        - type: The type of certificate to create.
      - Returns: The newly created `Certificate`.
      */
-    @discardableResult
-    public func createCertificate(type: CertificateType, keyNamePrefix: String) async throws -> Certificate {
+    @discardableResult public nonisolated(nonsending)
+    func createCertificate(type: CertificateType, keyNamePrefix: String) async throws -> Certificate {
         let label = "\(keyNamePrefix) \(Date().timeIntervalSince1970)"
         let privateKey = try keychain.createPrivateKey(labeled: label)
         let publicKey = try keychain.createPublicKey(from: privateKey)

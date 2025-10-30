@@ -8,8 +8,8 @@
 import Bagbutik_Core
 import Foundation
 
-@Observable @MainActor
-public class AppStoreConnectClient {
+@Observable
+public final class AppStoreConnectClient: Sendable {
     private let bagbutikService: BagbutikServiceProtocol
 
     public convenience init(jwt: JWT, fetchData: @escaping @Sendable FetchData) {
@@ -20,26 +20,31 @@ public class AppStoreConnectClient {
         self.bagbutikService = bagbutikService
     }
 
-    public func request<T>(_ request: Request<T, ErrorResponse>) async throws -> T
+    public nonisolated(nonsending)
+    func request<T>(_ request: Request<T, ErrorResponse>) async throws -> T
         where T: Decodable & Sendable {
         try await bagbutikService.request(request)
     }
 
-    @discardableResult public func request(_ request: Request<EmptyResponse, ErrorResponse>) async throws -> EmptyResponse {
+    @discardableResult public nonisolated(nonsending)
+    func request(_ request: Request<EmptyResponse, ErrorResponse>) async throws -> EmptyResponse {
         try await bagbutikService.request(request)
     }
 
-    public func requestAllPages<T>(_ request: Request<T, ErrorResponse>) async throws -> (responses: [T], data: [T.Data])
+    public nonisolated(nonsending)
+    func requestAllPages<T>(_ request: Request<T, ErrorResponse>) async throws -> (responses: [T], data: [T.Data])
         where T: Decodable & PagedResponse & Sendable {
         try await bagbutikService.requestAllPages(request)
     }
 
-    public func requestNextPage<T>(for response: T) async throws -> T?
+    public nonisolated(nonsending)
+    func requestNextPage<T>(for response: T) async throws -> T?
         where T: Decodable & PagedResponse & Sendable {
         try await bagbutikService.requestNextPage(for: response)
     }
 
-    public func requestAllPages<T>(for response: T) async throws -> (responses: [T], data: [T.Data])
+    public nonisolated(nonsending)
+    func requestAllPages<T>(for response: T) async throws -> (responses: [T], data: [T.Data])
         where T: Decodable & PagedResponse & Sendable, T.Data: Sendable {
         try await bagbutikService.requestAllPages(for: response)
     }
@@ -51,21 +56,21 @@ public extension AppStoreConnectClient {
     }
 }
 
-public protocol BagbutikServiceProtocol {
-    nonisolated(nonsending) func request<T>(_ request: Request<T, ErrorResponse>) async throws -> T
+public protocol BagbutikServiceProtocol: Sendable {
+    func request<T>(_ request: Request<T, ErrorResponse>) async throws -> T
         where T: Decodable & Sendable
-    @discardableResult nonisolated(nonsending) func request(_ request: Request<EmptyResponse, ErrorResponse>) async throws -> EmptyResponse
-    nonisolated(nonsending) func requestAllPages<T>(_ request: Request<T, ErrorResponse>) async throws -> (responses: [T], data: [T.Data])
+    @discardableResult func request(_ request: Request<EmptyResponse, ErrorResponse>) async throws -> EmptyResponse
+    func requestAllPages<T>(_ request: Request<T, ErrorResponse>) async throws -> (responses: [T], data: [T.Data])
         where T: Decodable & PagedResponse & Sendable
-    nonisolated(nonsending) func requestNextPage<T>(for response: T) async throws -> T?
+    func requestNextPage<T>(for response: T) async throws -> T?
         where T: Decodable & PagedResponse & Sendable
-    nonisolated(nonsending) func requestAllPages<T>(for response: T) async throws -> (responses: [T], data: [T.Data])
+    func requestAllPages<T>(for response: T) async throws -> (responses: [T], data: [T.Data])
         where T: Decodable & PagedResponse & Sendable, T.Data: Sendable
 }
 
 extension BagbutikService: BagbutikServiceProtocol {}
 
-class PreviewBagbutikService: BagbutikServiceProtocol {
+final class PreviewBagbutikService: BagbutikServiceProtocol {
     func request<T: Decodable>(_ request: Request<T, ErrorResponse>) async throws -> T {
         throw NSError(domain: "PreviewBagbutikService", code: 0, userInfo: nil)
     }

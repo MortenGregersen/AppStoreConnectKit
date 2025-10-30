@@ -348,6 +348,8 @@ public struct GenerateAPIKeyView: View {
     }
 }
 
+@MainActor
 private class PreviewAPIKeyValidator: APIKeyValidator {
-    nonisolated(nonsending) func validateKey(credentials: APIKeyCredentials) async throws {}
+    func validateKey(credentials: APIKeyCredentials) async throws {}
 }
+
