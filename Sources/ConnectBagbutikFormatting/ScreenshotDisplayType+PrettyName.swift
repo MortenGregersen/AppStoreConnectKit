@@ -7,7 +7,9 @@
 
 import Bagbutik_Models
 
+/// Extension to provide a pretty name for each `ScreenshotDisplayType`.
 public extension ScreenshotDisplayType {
+    /// A user-friendly name for the screenshot display type.
     var prettyName: String {
         switch self {
         case .appIphone67: #"iPhone 6.7" Display"#

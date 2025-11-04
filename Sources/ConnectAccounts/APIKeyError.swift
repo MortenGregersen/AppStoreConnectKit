@@ -24,5 +24,6 @@ public enum APIKeyError: LocalizedError, Equatable {
         }
     }
 
+    /// A localized message describing what error occurred.
     public var errorDescription: String? { description }
 }

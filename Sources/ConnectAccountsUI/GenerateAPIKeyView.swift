@@ -8,8 +8,8 @@
 import SwiftUI
 import WebKit
 
-@available(macOS 26.0, iOS 26.0, *)
 /// A SwiftUI view for generating an API key via App Store Connect.
+@available(macOS 26.0, iOS 26.0, *)
 public struct GenerateAPIKeyView: View {
     @State private var connectWebHandler = ConnectWebHandler()
     @State private var page: WebPage?

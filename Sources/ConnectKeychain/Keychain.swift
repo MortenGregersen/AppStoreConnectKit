@@ -7,22 +7,103 @@
 
 import Foundation
 
+/// Represents a keychain for storing and retrieving certificates, keys, and generic passwords.
 public protocol KeychainProtocol {
+    /**
+     Adds a certificate to the keychain with the specified name.
+
+     - Parameters:
+        - certificate: The certificate to add.
+        - name: The name to associate with the certificate.
+     */
     func addCertificate(certificate: SecCertificate, named name: String) throws
+
+    /**
+     Checks if a certificate with the specified serial number exists in the keychain.
+
+     - Parameter serialNumber: The serial number of the certificate to check.
+     - Returns: `true` if the certificate exists, `false` otherwise.
+     */
     func hasCertificate(serialNumber: String) async throws -> Bool
+
+    /**
+     Checks if certificates with the specified serial numbers exist in the keychain.
+
+     - Parameter serialNumbers: An array of serial numbers of the certificates to check.
+     - Returns: A dictionary mapping each serial number to a boolean indicating its existence in the keychain.
+     */
     func hasCertificates(serialNumbers: [String]) throws -> [String: Bool]
+
+    /**
+     Creates a new private key in the keychain with the specified label.
+
+     - Parameter label: The label to associate with the private key.
+     - Returns: The created private key.
+     */
     func createPrivateKey(labeled label: String) throws -> SecKey
+
+    /**
+     Creates a public key from the given private key.
+
+     - Parameter privateKey: The private key from which to derive the public key.
+     - Returns: A tuple containing the public key and its external representation data.
+     */
     func createPublicKey(from privateKey: SecKey) throws -> (key: SecKey, data: Data)
+
+    /**
+     Retrieves a generic password from the keychain for the specified service and account.
+
+     - Parameters:
+        - service: The service associated with the generic password.
+        - account: The account associated with the generic password.
+     - Returns: The `GenericPassword` if found, otherwise `nil`.
+     */
     func getGenericPassword(forService service: String, account: String) throws -> GenericPassword?
+
+    /**
+     Lists all generic passwords from the keychain for the specified service.
+
+     - Parameter service: The service associated with the generic passwords.
+     - Returns: An array of `GenericPassword` items.
+     */
     func listGenericPasswords(forService service: String) throws -> [GenericPassword]
+
+    /**
+     Adds a generic password to the keychain for the specified service.
+
+     - Parameters:
+        - service: The service associated with the generic password.
+        - password: The `GenericPassword` to add.
+     */
     func addGenericPassword(forService service: String, password: GenericPassword) throws
+
+    /**
+     Updates an existing generic password in the keychain for the specified service.
+
+     - Parameters:
+        - service: The service associated with the generic password.
+        - password: The `GenericPassword` to update.
+     */
     func updateGenericPassword(forService service: String, password: GenericPassword) throws
+
+    /**
+     Deletes a generic password from the keychain for the specified service.
+
+     - Parameters:
+        - service: The service associated with the generic password.
+        - password: The `GenericPassword` to delete.
+     */
     func deleteGenericPassword(forService service: String, password: GenericPassword) throws
 }
 
 public struct Keychain: KeychainProtocol, Sendable {
     private let accessGroup: String
 
+    /**
+     Initializes a new instance of `Keychain` with the specified access group.
+
+     - Parameter accessGroup: The access group for the keychain (set in Signing and Capabilites for the target).
+     */
     public init(accessGroup: String) {
         self.accessGroup = accessGroup
     }
@@ -252,6 +333,7 @@ public struct Keychain: KeychainProtocol, Sendable {
 }
 
 public extension Keychain {
+    /// A `Keychain instance configured for use in previews and tests.
     static func forPreview() -> Keychain {
         .init(accessGroup: "AppStoreConnectKit.Keychain-Preview")
     }

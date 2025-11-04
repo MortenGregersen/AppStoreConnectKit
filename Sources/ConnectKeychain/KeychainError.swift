@@ -8,6 +8,7 @@
 import ConnectCore
 import Foundation
 
+/// Errors that can occur when interacting with the Keychain.
 public enum KeychainError: LocalizedError, Equatable {
     /// An error occurred when reading from Keychain.
     case errorReadingFromKeychain(OSStatus)
@@ -30,6 +31,7 @@ public enum KeychainError: LocalizedError, Equatable {
     /// Could not delete password from Keychain.
     case failedDeletingPassword
 
+    /// A description of the error.
     public var description: String {
         switch self {
         case .errorReadingFromKeychain(let status):
@@ -55,5 +57,6 @@ public enum KeychainError: LocalizedError, Equatable {
         }
     }
 
+    /// A localized description of the error.
     public var errorDescription: String? { description }
 }

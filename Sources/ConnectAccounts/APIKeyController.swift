@@ -3,9 +3,12 @@ import ConnectCore
 import ConnectKeychain
 import Foundation
 
+/// Controller for managing API keys stored in the keychain.
 @Observable @MainActor
 public class APIKeyController {
+    /// The list of API keys.
     public private(set) var apiKeys: [APIKey]?
+    /// The currently selected API key.
     public var selectedAPIKey: APIKey? {
         didSet {
             if let selectedAPIKey {
@@ -14,7 +17,9 @@ public class APIKeyController {
         }
     }
 
+    /// Publisher that emits when an API key is added.
     public var didAddAPIKey: PassthroughSubject<APIKey, Never> = .init()
+    /// Publisher that emits when an API key is deleted.
     public var didDeleteAPIKey: PassthroughSubject<APIKey, Never> = .init()
 
     private let service: String
@@ -24,12 +29,20 @@ public class APIKeyController {
         set { UserDefaults.standard.set(newValue, forKey: "selected-api-key-id") }
     }
 
+    /**
+     Initializes a new instance of `APIKeyController`.
+
+     - Parameters:
+        - keychainServiceName: The service name used for storing API keys in the keychain.
+        - keychain: The Keychain instance to use for storing and retrieving API keys.
+     */
     public init(keychainServiceName: String, keychain: KeychainProtocol) {
         precondition(!keychainServiceName.isEmpty, "Service must not be empty")
         self.service = keychainServiceName
         self.keychain = keychain
     }
 
+    /// Loads the API keys from the keychain.
     public func loadAPIKeys() throws {
         let apiKeys = try keychain.listGenericPasswords(forService: service)
             .map { password -> APIKey in
@@ -44,6 +57,11 @@ public class APIKeyController {
         }
     }
 
+    /**
+     Adds a new API key to the keychain.
+
+     - Parameter apiKey: The API key to add.
+     */
     public func addAPIKey(_ apiKey: APIKey) throws {
         do {
             try keychain.addGenericPassword(forService: service, password: apiKey.getGenericPassword())
@@ -61,6 +79,11 @@ public class APIKeyController {
         didAddAPIKey.send(apiKey)
     }
 
+    /**
+     Deletes an API key from the keychain.
+
+     - Parameter apiKey: The API key to delete.
+     */
     public func deleteAPIKey(_ apiKey: APIKey) throws {
         try keychain.deleteGenericPassword(forService: service, password: apiKey.getGenericPassword())
         guard var apiKeys, let index = apiKeys.firstIndex(where: { $0.keyId == apiKey.keyId }) else {
@@ -73,6 +96,7 @@ public class APIKeyController {
 }
 
 public extension APIKeyController {
+    /// An `APIKeyController` instance configured for use in previews and tests.
     static func forPreview(apiKeys: [APIKey]? = nil) -> APIKeyController {
         let controller = APIKeyController(keychainServiceName: "AppStoreConnectKit-Preview", keychain: Keychain.forPreview())
         controller.apiKeys = apiKeys
