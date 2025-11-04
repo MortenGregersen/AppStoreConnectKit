@@ -20,7 +20,7 @@
 
 With **AppStoreConnectKit**, you have all you need to interact with the **App Store Connect API**. With the `APIKeyController` you can handle `APIKey`s stored in Keychain, and with the `AppStoreConnectClient`, you can perform all the operations in the API.
 
-This libraries is born out of code coming from [AppDab for App Store Connect](https://AppDab.app), which is now based on AppStoreConnectKit. AppDab is the fastest way to ship your apps on the App Store 🚀
+These libraries are born out of code coming from [AppDab for App Store Connect](https://AppDab.app), which is now based on AppStoreConnectKit. AppDab is the fastest way to ship your apps on the App Store 🚀
 
 ### How do I create an API Key?
 
