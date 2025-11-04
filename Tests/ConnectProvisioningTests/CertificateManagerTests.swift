@@ -27,7 +27,7 @@ struct CreateCertificateTests {
         mockBagbutikService.setResponse(response, for: Endpoint(path: "/v1/certificates", method: .post))
         let mockKeychain = MockKeychain()
         mockKeychain.publicKeyDataToReturn = "some public key".data(using: .utf8)
-        let certificateManager = await CertificateManager(keychain: mockKeychain, connectClient: .init(bagbutikService: mockBagbutikService), buildCSRAndReturnString: { _, _, _ in
+        let certificateManager = CertificateManager(keychain: mockKeychain, connectClient: .init(bagbutikService: mockBagbutikService), buildCSRAndReturnString: { _, _, _ in
             "valid csr"
         })
         // Act
@@ -47,7 +47,7 @@ struct CreateCertificateTests {
         mockBagbutikService.setResponse(response, for: Endpoint(path: "/v1/certificates", method: .post))
         let mockKeychain = MockKeychain()
         mockKeychain.createRandomKeyShouldSucceed = false
-        let certificateManager = await CertificateManager(keychain: mockKeychain, connectClient: .init(bagbutikService: mockBagbutikService))
+        let certificateManager = CertificateManager(keychain: mockKeychain, connectClient: .init(bagbutikService: mockBagbutikService))
         // Act
         let error = await #expect(throws: NSError.self) {
             try await certificateManager.createCertificate(type: .development, keyNamePrefix: "AppStoreConnectKit")
@@ -66,7 +66,7 @@ struct CreateCertificateTests {
         mockBagbutikService.setResponse(response, for: Endpoint(path: "/v1/certificates", method: .post))
         let mockKeychain = MockKeychain()
         mockKeychain.copyPublicKeyShouldSucceed = false
-        let certificateManager = await CertificateManager(keychain: mockKeychain, connectClient: .init(bagbutikService: mockBagbutikService))
+        let certificateManager = CertificateManager(keychain: mockKeychain, connectClient: .init(bagbutikService: mockBagbutikService))
         // Act/assert
         await #expect(throws: KeychainError.errorCreatingPublicKey) {
             try await certificateManager.createCertificate(type: .development, keyNamePrefix: "AppStoreConnectKit")
@@ -84,7 +84,7 @@ struct CreateCertificateTests {
         mockBagbutikService.setResponse(response, for: Endpoint(path: "/v1/certificates", method: .post))
         let mockKeychain = MockKeychain()
         mockKeychain.copyPublicKeyDataShouldSucceed = false
-        let certificateManager = await CertificateManager(keychain: mockKeychain, connectClient: .init(bagbutikService: mockBagbutikService))
+        let certificateManager = CertificateManager(keychain: mockKeychain, connectClient: .init(bagbutikService: mockBagbutikService))
         // Act/assert
         await #expect(throws: KeychainError.errorGettingPublicKeyData) {
             try await certificateManager.createCertificate(type: .development, keyNamePrefix: "AppStoreConnectKit")
@@ -102,7 +102,7 @@ struct CreateCertificateTests {
         mockBagbutikService.setResponse(response, for: Endpoint(path: "/v1/certificates", method: .post))
         let mockKeychain = MockKeychain()
         mockKeychain.publicKeyDataToReturn = "some invalid public key".data(using: .utf8)
-        let certificateManager = await CertificateManager(keychain: mockKeychain, connectClient: .init(bagbutikService: mockBagbutikService)) { _, _, _ in
+        let certificateManager = CertificateManager(keychain: mockKeychain, connectClient: .init(bagbutikService: mockBagbutikService)) { _, _, _ in
             nil
         }
         // Act/assert
@@ -155,7 +155,7 @@ struct CreateCertificateTests {
             )
         )
         let mockKeychain = MockKeychain()
-        let certificateManager = await CertificateManager(keychain: mockKeychain, connectClient: .init(bagbutikService: MockBagbutikService()))
+        let certificateManager = CertificateManager(keychain: mockKeychain, connectClient: .init(bagbutikService: MockBagbutikService()))
         #expect(mockKeychain.serialNumbersForCertificatesInKeychain.isEmpty)
         // Act
         try certificateManager.addCertificateToKeychain(certificate: certificate)
@@ -175,7 +175,7 @@ struct CreateCertificateTests {
             )
         )
         let mockKeychain = MockKeychain()
-        let certificateManager = await CertificateManager(keychain: mockKeychain, connectClient: .init(bagbutikService: MockBagbutikService()))
+        let certificateManager = CertificateManager(keychain: mockKeychain, connectClient: .init(bagbutikService: MockBagbutikService()))
         // Act/assert
         #expect(throws: AddCertificateToKeychainError.invalidOnlineCertificateData) {
             try certificateManager.addCertificateToKeychain(certificate: certificate)
@@ -195,7 +195,7 @@ struct CreateCertificateTests {
             )
         )
         let mockKeychain = MockKeychain()
-        let certificateManager = await CertificateManager(keychain: mockKeychain, connectClient: .init(bagbutikService: MockBagbutikService()))
+        let certificateManager = CertificateManager(keychain: mockKeychain, connectClient: .init(bagbutikService: MockBagbutikService()))
         // Act/assert
         #expect(throws: AddCertificateToKeychainError.invalidOnlineCertificateData) {
             try certificateManager.addCertificateToKeychain(certificate: certificate)

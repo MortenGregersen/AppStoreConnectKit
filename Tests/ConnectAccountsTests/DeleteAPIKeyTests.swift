@@ -21,7 +21,7 @@ struct DeleteAPIKeyTests {
         mockKeychain.returnStatusForDelete = errSecSuccess
         mockKeychain.genericPasswordsInKeychain = try [apiKey.getGenericPassword()]
         let controller = APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
-        try await controller.loadAPIKeys()
+        try controller.loadAPIKeys()
         #expect(controller.apiKeys == [apiKey])
         // Act
         try controller.deleteAPIKey(apiKey)
@@ -36,7 +36,7 @@ struct DeleteAPIKeyTests {
         mockKeychain.returnStatusForDelete = errSecDatabaseLocked
         mockKeychain.genericPasswordsInKeychain = try [apiKey.getGenericPassword()]
         let controller = APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
-        try await controller.loadAPIKeys()
+        try controller.loadAPIKeys()
         #expect(controller.apiKeys == [apiKey])
         // Act
         #expect(throws: KeychainError.failedDeletingPassword) {

@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  AppStoreConnectKit
+//  MapError.swift
+//  ConnectCore
 //
 //  Created by Morten Bjerg Gregersen on 02/10/2025.
 //
@@ -41,15 +41,5 @@ public func mapErrorToConnectError(error: Error, parseAppStoreConnectErrors: Boo
     } else {
         let stackTrace = Thread.callStackSymbols.joined(separator: "\n")
         return .unhandledError(message: error.localizedDescription, stackTrace: stackTrace)
-    }
-}
-
-private extension Sequence where Iterator.Element: Hashable {
-    var unique: [Iterator.Element] {
-        var seen: Set<Iterator.Element> = []
-        return filter {
-            let result = seen.insert($0)
-            return result.inserted
-        }
     }
 }
