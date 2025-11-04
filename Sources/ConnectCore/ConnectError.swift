@@ -18,8 +18,10 @@ public enum ConnectError: Error, Equatable, LocalizedError {
     /// An unhandled error with a message and a stack trace.
     case unhandledError(message: String, stackTrace: String)
 
+    /// A description of the error.
     public var errorDescription: String? { message }
 
+    /// The main message of the error.
     public var message: String {
         switch self {
         case .simpleError(let message), .unhandledError(let message, _):

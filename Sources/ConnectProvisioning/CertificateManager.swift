@@ -42,11 +42,19 @@ public enum AddCertificateToKeychainError: LocalizedError, Equatable {
     public var errorDescription: String? { description }
 }
 
+/// Manager for creating and adding certificates to Keychain.
 public class CertificateManager {
     private let keychain: KeychainProtocol
     private let connectClient: AppStoreConnectClient
     private let buildCSRAndReturnString: (Data, SecKey, SecKey?) -> String?
 
+    /**
+     Create a new `CertificateManager`.
+
+     - Parameters:
+        - keychain: The `KeychainProtocol` to use for Keychain operations.
+        - connectClient: The `AppStoreConnectClient` to use for App Store Connect operations.
+     */
     public convenience init(keychain: KeychainProtocol, connectClient: AppStoreConnectClient) {
         self.init(keychain: keychain, connectClient: connectClient, buildCSRAndReturnString: {
             let signingRequest = CertificateSigningRequest()
