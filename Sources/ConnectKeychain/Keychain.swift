@@ -7,20 +7,95 @@
 
 import Foundation
 
+/// Represents a keychain for storing and retrieving certificates, keys, and generic passwords.
 public protocol KeychainProtocol {
+    /**
+     Adds a certificate to the keychain with the specified name.
+
+     - Parameters:
+        - certificate: The certificate to add.
+        - name: The name to associate with the certificate.
+     */
     func addCertificate(certificate: SecCertificate, named name: String) throws
+
+    /**
+     Checks if a certificate with the specified serial number exists in the keychain.
+
+     - Parameter serialNumber: The serial number of the certificate to check.
+     - Returns: `true` if the certificate exists, `false` otherwise.
+     */
     func hasCertificate(serialNumber: String) async throws -> Bool
+
+    /**
+     Checks if certificates with the specified serial numbers exist in the keychain.
+
+     - Parameter serialNumbers: An array of serial numbers of the certificates to check.
+     - Returns: A dictionary mapping each serial number to a boolean indicating its existence in the keychain.
+     */
     func hasCertificates(serialNumbers: [String]) throws -> [String: Bool]
+
+    /**
+     Creates a new private key in the keychain with the specified label.
+
+     - Parameter label: The label to associate with the private key.
+     - Returns: The created private key.
+     */
     func createPrivateKey(labeled label: String) throws -> SecKey
+
+    /**
+     Creates a public key from the given private key.
+
+     - Parameter privateKey: The private key from which to derive the public key.
+     - Returns: A tuple containing the public key and its external representation data.
+     */
     func createPublicKey(from privateKey: SecKey) throws -> (key: SecKey, data: Data)
+
+    /**
+     Retrieves a generic password from the keychain for the specified service and account.
+
+     - Parameters:
+        - service: The service associated with the generic password.
+        - account: The account associated with the generic password.
+     - Returns: The `GenericPassword` if found, otherwise `nil`.
+     */
     func getGenericPassword(forService service: String, account: String) throws -> GenericPassword?
+
+    /**
+     Lists all generic passwords from the keychain for the specified service.
+
+     - Parameter service: The service associated with the generic passwords.
+     - Returns: An array of `GenericPassword` items.
+     */
     func listGenericPasswords(forService service: String) throws -> [GenericPassword]
+
+    /**
+     Adds a generic password to the keychain for the specified service.
+
+     - Parameters:
+        - service: The service associated with the generic password.
+        - password: The `GenericPassword` to add.
+     */
     func addGenericPassword(forService service: String, password: GenericPassword) throws
+
+    /**
+     Updates an existing generic password in the keychain for the specified service.
+
+     - Parameters:
+        - service: The service associated with the generic password.
+        - password: The `GenericPassword` to update.
+     */
     func updateGenericPassword(forService service: String, password: GenericPassword) throws
+
+    /**
+     Deletes a generic password from the keychain for the specified service.
+
+     - Parameters:
+        - service: The service associated with the generic password.
+        - password: The `GenericPassword` to delete.
+     */
     func deleteGenericPassword(forService service: String, password: GenericPassword) throws
 }
 
-/// Represents a keychain for storing and retrieving certificates, keys, and generic passwords.
 public struct Keychain: KeychainProtocol, Sendable {
     private let accessGroup: String
 
@@ -55,13 +130,6 @@ public struct Keychain: KeychainProtocol, Sendable {
         self.secKeyCopyExternalRepresentation = secKeyCopyExternalRepresentation
     }
 
-    /**
-     Adds a certificate to the keychain with the specified name.
-
-     - Parameters:
-        - certificate: The certificate to add.
-        - name: The name to associate with the certificate.
-     */
     public func addCertificate(certificate: SecCertificate, named name: String) throws {
         let addquery: NSDictionary = [kSecClass: kSecClassCertificate,
                                       kSecValueRef: certificate,
@@ -72,12 +140,6 @@ public struct Keychain: KeychainProtocol, Sendable {
         }
     }
 
-    /**
-     Checks if a certificate with the specified serial number exists in the keychain.
-
-     - Parameter serialNumber: The serial number of the certificate to check.
-     - Returns: `true` if the certificate exists, `false` otherwise.
-     */
     public func hasCertificate(serialNumber: String) async throws -> Bool {
         let secItemCopyMatching = secItemCopyMatching
         let secIdentityCopyCertificate = secIdentityCopyCertificate
@@ -106,12 +168,6 @@ public struct Keychain: KeychainProtocol, Sendable {
         }.value
     }
 
-    /**
-     Checks if certificates with the specified serial numbers exist in the keychain.
-
-     - Parameter serialNumbers: An array of serial numbers of the certificates to check.
-     - Returns: A dictionary mapping each serial number to a boolean indicating its existence in the keychain.
-     */
     public func hasCertificates(serialNumbers: [String]) throws -> [String: Bool] {
         var copyResult: CFTypeRef?
         let statusCopyingIdentities = secItemCopyMatching([
@@ -140,12 +196,6 @@ public struct Keychain: KeychainProtocol, Sendable {
         }
     }
 
-    /**
-     Creates a new private key in the keychain with the specified label.
-
-     - Parameter label: The label to associate with the private key.
-     - Returns: The created private key.
-     */
     public func createPrivateKey(labeled label: String) throws -> SecKey {
         let tag = label.data(using: .utf8)!
         let parameters: NSDictionary =
@@ -163,12 +213,6 @@ public struct Keychain: KeychainProtocol, Sendable {
         return privateKey
     }
 
-    /**
-     Creates a public key from the given private key.
-
-     - Parameter privateKey: The private key from which to derive the public key.
-     - Returns: A tuple containing the public key and its external representation data.
-     */
     public func createPublicKey(from privateKey: SecKey) throws -> (key: SecKey, data: Data) {
         guard let publicKey = secKeyCopyPublicKey(privateKey) else {
             throw KeychainError.errorCreatingPublicKey
@@ -180,24 +224,10 @@ public struct Keychain: KeychainProtocol, Sendable {
         return (key: publicKey, data: publicKeyData as Data)
     }
 
-    /**
-     Retrieves a generic password from the keychain for the specified service and account.
-
-     - Parameters:
-        - service: The service associated with the generic password.
-        - account: The account associated with the generic password.
-     - Returns: The `GenericPassword` if found, otherwise `nil`.
-     */
     public func getGenericPassword(forService service: String, account: String) throws -> GenericPassword? {
         try listGenericPasswords(forService: service, account: account).first
     }
 
-    /**
-     Lists all generic passwords from the keychain for the specified service.
-
-     - Parameter service: The service associated with the generic passwords.
-     - Returns: An array of `GenericPassword` items.
-     */
     public func listGenericPasswords(forService service: String) throws -> [GenericPassword] {
         try listGenericPasswords(forService: service, account: nil)
     }
@@ -232,13 +262,6 @@ public struct Keychain: KeychainProtocol, Sendable {
         }
     }
 
-    /**
-     Adds a generic password to the keychain for the specified service.
-
-     - Parameters:
-        - service: The service associated with the generic password.
-        - password: The `GenericPassword` to add.
-     */
     public func addGenericPassword(forService service: String, password: GenericPassword) throws {
         let query: NSMutableDictionary = [
             kSecClass: kSecClassGenericPassword,
@@ -258,13 +281,6 @@ public struct Keychain: KeychainProtocol, Sendable {
         }
     }
 
-    /**
-     Updates an existing generic password in the keychain for the specified service.
-
-     - Parameters:
-        - service: The service associated with the generic password.
-        - password: The `GenericPassword` to update.
-     */
     public func updateGenericPassword(forService service: String, password: GenericPassword) throws {
         let query: NSMutableDictionary = [
             kSecClass: kSecClassGenericPassword,
@@ -284,13 +300,6 @@ public struct Keychain: KeychainProtocol, Sendable {
         }
     }
 
-    /**
-     Deletes a generic password from the keychain for the specified service.
-
-     - Parameters:
-        - service: The service associated with the generic password.
-        - password: The `GenericPassword` to delete.
-     */
     public func deleteGenericPassword(forService service: String, password: GenericPassword) throws {
         let query: NSMutableDictionary = [
             kSecClass: kSecClassGenericPassword,

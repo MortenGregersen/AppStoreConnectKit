@@ -9,9 +9,13 @@ import Foundation
 
 /// Struct representing a generic password stored in the keychain.
 public struct GenericPassword: Equatable, Sendable {
+    /// The account associated with the generic password.
     public let account: String
+    /// The label for the generic password.
     public let label: String
+    /// The generic data associated with the password.
     public let generic: Data
+    /// The actual password data.
     public let value: Data
 
     /**

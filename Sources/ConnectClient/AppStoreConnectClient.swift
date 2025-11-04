@@ -102,13 +102,47 @@ public extension AppStoreConnectClient {
 
 /// A protocol defining the necessary methods for a Bagbutik service.
 public protocol BagbutikServiceProtocol: Sendable {
+    /**
+     Sends a request to the App Store Connect API and returns the decoded response.
+
+     - Parameter request: A `Request` object representing the API request.
+     - Returns: The decoded response of type `T`.
+     */
     func request<T>(_ request: Request<T, ErrorResponse>) async throws -> T
         where T: Decodable & Sendable
+
+    /**
+     Sends a request to the App Store Connect API that expects no response body.
+
+     - Parameter request: A `Request` object representing the API request.
+     - Returns: An `EmptyResponse` indicating success.
+     */
     @discardableResult func request(_ request: Request<EmptyResponse, ErrorResponse>) async throws -> EmptyResponse
+
+    /**
+     Sends a paginated request to the App Store Connect API and returns all pages of the decoded response.
+
+     - Parameter request: A `Request` object representing the API request.
+     - Returns: A tuple containing an array of all responses and an array of all data items.
+     */
     func requestAllPages<T>(_ request: Request<T, ErrorResponse>) async throws -> (responses: [T], data: [T.Data])
         where T: Decodable & PagedResponse & Sendable
+
+    /**
+     Sends a request to fetch the next page of a paginated response.
+
+     - Parameter response: The previous paginated response.
+     - Returns: The next page of the response, or `nil` if there are no more pages.
+     */
     func requestNextPage<T>(for response: T) async throws -> T?
         where T: Decodable & PagedResponse & Sendable
+
+    /**
+     Sends requests to fetch all remaining pages of a paginated response.
+
+     - Parameter response: The previous paginated response.
+     - Returns: A tuple containing an array of all responses and an array of all data items.
+     */
     func requestAllPages<T>(for response: T) async throws -> (responses: [T], data: [T.Data])
         where T: Decodable & PagedResponse & Sendable, T.Data: Sendable
 }
