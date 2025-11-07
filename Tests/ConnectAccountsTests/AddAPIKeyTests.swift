@@ -22,16 +22,12 @@ struct AddAPIKeyTests {
         #expect(controller.apiKeys == nil)
         #expect(controller.selectedAPIKey == nil)
         #expect(mockKeychain.genericPasswordsInKeychain.isEmpty)
-        var addedAPIKeys = [APIKey]()
-        var cancellables = Set<AnyCancellable>()
-        controller.didAddAPIKey.sink { addedAPIKeys.append($0) }.store(in: &cancellables)
         // Act
         try controller.addAPIKey(apiKey)
         // Assert
         #expect(controller.apiKeys == [apiKey])
         #expect(controller.selectedAPIKey == apiKey)
         #expect(try mockKeychain.genericPasswordsInKeychain == [apiKey.getGenericPassword()])
-        #expect(addedAPIKeys == [apiKey])
     }
 
     @Test("Add API Key - Duplicate error")
@@ -40,9 +36,6 @@ struct AddAPIKeyTests {
         let mockKeychain = MockKeychain()
         mockKeychain.returnStatusForAdd = errSecDuplicateItem
         let controller = APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
-        var addedAPIKeys = [APIKey]()
-        var cancellables = Set<AnyCancellable>()
-        controller.didAddAPIKey.sink { addedAPIKeys.append($0) }.store(in: &cancellables)
         // Act
         #expect(throws: APIKeyError.duplicateAPIKey) {
             try controller.addAPIKey(apiKey)
@@ -50,7 +43,6 @@ struct AddAPIKeyTests {
         // Assert
         #expect(controller.apiKeys == nil)
         #expect(controller.selectedAPIKey == nil)
-        #expect(addedAPIKeys == [])
     }
 
     @Test("Add API Key - Unknown error")
@@ -60,9 +52,6 @@ struct AddAPIKeyTests {
         let mockKeychain = MockKeychain()
         mockKeychain.returnStatusForAdd = status
         let controller = APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
-        var addedAPIKeys = [APIKey]()
-        var cancellables = Set<AnyCancellable>()
-        controller.didAddAPIKey.sink { addedAPIKeys.append($0) }.store(in: &cancellables)
         // Act
         #expect(throws: APIKeyError.failedAddingAPIKey(status)) {
             try controller.addAPIKey(apiKey)
@@ -70,6 +59,5 @@ struct AddAPIKeyTests {
         // Assert
         #expect(controller.apiKeys == nil)
         #expect(controller.selectedAPIKey == nil)
-        #expect(addedAPIKeys == [])
     }
 }
