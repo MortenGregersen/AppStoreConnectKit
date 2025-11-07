@@ -5,7 +5,7 @@
 <h1 align="center">AppStoreConnectKit</h1>
 
 <p align="center">
-    <b>All you need to interact with the <a href="https://developer.apple.com/documentation/appstoreconnectapi">App Store Connect API</a>.</b>
+    <b>All you need to interact with the <a href="https://developer.apple.com/documentation/appstoreconnectapi">App Store Connect API</a> on Apple platforms.</b>
     <br /><br />
     <a href="https://swiftpackageindex.com/MortenGregersen/AppStoreConnectKit"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FMortenGregersen%2FAppStoreConnectKit%2Fbadge%3Ftype%3Dswift-versions" alt="Swift versions" /></a>
     <a href="https://swiftpackageindex.com/MortenGregersen/AppStoreConnectKit"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FMortenGregersen%2FAppStoreConnectKit%2Fbadge%3Ftype%3Dplatforms" alt="Platforms" /></a>
@@ -18,7 +18,7 @@
 
 ## What is AppStoreConnectKit?
 
-With **AppStoreConnectKit**, you have all you need to interact with the **App Store Connect API**. With the `APIKeyController` you can handle `APIKey`s stored in Keychain, and with the `AppStoreConnectClient`, you can perform all the operations in the API.
+With **AppStoreConnectKit**, you have all you need to interact with the **App Store Connect API** on Apple platforms. With the `APIKeyController` you can handle `APIKey`s stored in Keychain, and with the `AppStoreConnectClient`, you can perform all the operations in the API.
 
 These libraries are born out of code coming from [AppDab for App Store Connect](https://AppDab.app), which is now based on AppStoreConnectKit. AppDab is the fastest way to ship your apps on the App Store 🚀
 
