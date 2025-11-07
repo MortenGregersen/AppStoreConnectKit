@@ -46,7 +46,7 @@ public class APIKeyController {
                 return apiKey
             }
             .sorted { $0.name < $1.name }
-        self.apiKeys = apiKeys.sorted(using: KeyPathComparator(\.name))
+        self.apiKeys = apiKeys
         if let apiKey = apiKeys.first(where: { $0.keyId == selectedAPIKeyId }) ?? apiKeys.first {
             selectedAPIKey = apiKey
         }
