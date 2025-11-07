@@ -17,11 +17,6 @@ public class APIKeyController {
         }
     }
 
-    /// Publisher that emits when an API key is added.
-    public var didAddAPIKey: PassthroughSubject<APIKey, Never> = .init()
-    /// Publisher that emits when an API key is deleted.
-    public var didDeleteAPIKey: PassthroughSubject<APIKey, Never> = .init()
-
     private let service: String
     private let keychain: KeychainProtocol
     private var selectedAPIKeyId: String? {
@@ -51,7 +46,7 @@ public class APIKeyController {
                 return apiKey
             }
             .sorted { $0.name < $1.name }
-        self.apiKeys = apiKeys
+        self.apiKeys = apiKeys.sorted(using: KeyPathComparator(\.name))
         if let apiKey = apiKeys.first(where: { $0.keyId == selectedAPIKeyId }) ?? apiKeys.first {
             selectedAPIKey = apiKey
         }
@@ -75,8 +70,7 @@ public class APIKeyController {
             selectedAPIKey = apiKey
         }
         apiKeys.append(apiKey)
-        self.apiKeys = apiKeys
-        didAddAPIKey.send(apiKey)
+        self.apiKeys = apiKeys.sorted(using: KeyPathComparator(\.name))
     }
 
     /**
@@ -91,7 +85,6 @@ public class APIKeyController {
         }
         apiKeys.remove(at: index)
         self.apiKeys = apiKeys
-        didDeleteAPIKey.send(apiKey)
     }
 }
 
