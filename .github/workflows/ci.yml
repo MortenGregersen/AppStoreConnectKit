@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         version:
-          - "26.0.1"
+          - "26.1"
         target:
           - "macOS"
           - "iOS"
@@ -39,7 +39,7 @@ jobs:
           xcodebuild test \
             -scheme AppStoreConnectKit-Package \
             -sdk iphonesimulator \
-            -destination "platform=iOS Simulator,name=iPhone 17,OS=26.0.1" \
+            -destination "platform=iOS Simulator,name=iPhone 17,OS=26.1" \
             -enableCodeCoverage YES \
             CODE_SIGNING_ALLOWED=NO | xcpretty -r junit --output junit.xml
       - name: Upload coverage reports to Codecov
