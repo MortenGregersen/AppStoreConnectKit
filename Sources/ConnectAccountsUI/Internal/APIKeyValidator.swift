@@ -15,4 +15,3 @@ public protocol APIKeyValidator: AnyObject {
      */
     func validateKey(credentials: APIKeyCredentials) async throws
 }
-

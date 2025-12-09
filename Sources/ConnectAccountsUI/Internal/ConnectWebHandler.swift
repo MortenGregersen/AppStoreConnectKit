@@ -1,3 +1,4 @@
+#if canImport(WebKit)
 //
 //  ConnectWebHandler.swift
 //  ConnectAccountsUI
@@ -59,8 +60,8 @@ final class ConnectWebHandler {
     private var lastPolledURL: URL?
 
     init() {
-        self.steps = Self.stepsForKeyType(.individual)
-        self.keyType = .individual
+        steps = Self.stepsForKeyType(.individual)
+        keyType = .individual
     }
 
     func resolveStep(url: URL) async {
@@ -292,3 +293,4 @@ private struct IntegrationsApiPage: Page {
         nil
     }
 }
+#endif
