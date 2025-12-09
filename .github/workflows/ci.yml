@@ -27,18 +27,28 @@ jobs:
         run: |
           xcodebuild -version
           swift --version
-      - name: Build & Test for ${{ matrix.target }}
+      - name: Run macOS tests (SPM)
+        if: ${{ matrix.target == 'macOS' }}
         run: |
-          if [ "${{ matrix.target }}" == "macOS" ]; then
-            swift test -v
-          else
-            xcodebuild test \
-              -scheme AppStoreConnectKit-Package \
-              -sdk iphonesimulator \
-              -destination "platform=iOS Simulator,name=iPhone 17,OS=26.0.1" \
-              CODE_SIGNING_ALLOWED=NO
-          fi
+          swift test -v
+      - name: Run iOS tests and generate JUnit report
+        if: ${{ matrix.target == 'iOS' }}
+        run: |
+          # Install xcpretty to format xcodebuild output and generate junit.xml
+          gem install xcpretty --no-document
+          xcodebuild test \
+            -scheme AppStoreConnectKit-Package \
+            -sdk iphonesimulator \
+            -destination "platform=iOS Simulator,name=iPhone 17,OS=26.0.1" \
+            -enableCodeCoverage YES \
+            CODE_SIGNING_ALLOWED=NO | xcpretty -r junit --output junit.xml
       - name: Upload coverage reports to Codecov
-          uses: codecov/codecov-action@v5
-          with:
-            token: ${{ secrets.CODECOV_TOKEN }}
+        if: ${{ matrix.target == 'iOS' }}
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload test results to Codecov
+        if: ${{ matrix.target == 'iOS' && !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
