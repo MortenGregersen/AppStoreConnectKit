@@ -1,3 +1,4 @@
+#if canImport(WebKit)
 //
 //  GenerateAPIKeyView.swift
 //  ConnectAccountsUI
@@ -352,4 +353,4 @@ public struct GenerateAPIKeyView: View {
 private class PreviewAPIKeyValidator: APIKeyValidator {
     func validateKey(credentials: APIKeyCredentials) async throws {}
 }
-
+#endif
