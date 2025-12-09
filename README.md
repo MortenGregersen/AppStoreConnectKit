@@ -11,6 +11,7 @@
     <a href="https://swiftpackageindex.com/MortenGregersen/AppStoreConnectKit"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FMortenGregersen%2FAppStoreConnectKit%2Fbadge%3Ftype%3Dplatforms" alt="Platforms" /></a>
     <br />
     <a href="https://github.com/MortenGregersen/AppStoreConnectKit/actions/workflows/ci.yml"><img src="https://github.com/MortenGregersen/AppStoreConnectKit/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+    <a href="https://codecov.io/gh/MortenGregersen/AppStoreConnectKit"><img src="https://codecov.io/gh/MortenGregersen/AppStoreConnectKit/graph/badge.svg?token=B92LcOmXyc"/></a>
     <br />
     <a href="https://x.com/mortengregersen"><img src="https://img.shields.io/badge/%40mortengregersen-black?logo=x" alt="X (Twitter)" /></a>
     <a href="https://mastodon.social/@mortengregersen"><img src="https://img.shields.io/badge/%40mortengregersen-6364FF?logo=mastodon&logoColor=white" alt="Mastodon" /></a>
