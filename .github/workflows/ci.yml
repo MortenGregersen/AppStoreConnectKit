@@ -32,9 +32,21 @@ jobs:
           if [ "${{ matrix.target }}" == "macOS" ]; then
             swift test -v
           else
+            gem install xcpretty --no-document
             xcodebuild test \
               -scheme AppStoreConnectKit-Package \
               -sdk iphonesimulator \
               -destination "platform=iOS Simulator,name=iPhone 17,OS=26.1" \
-              CODE_SIGNING_ALLOWED=NO
+              -enableCodeCoverage YES \
+              CODE_SIGNING_ALLOWED=NO | xcpretty -r junit --output junit.xml
           fi
+      - name: Upload coverage reports to Codecov
+        if: ${{ matrix.target == 'iOS' }}
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload test results to Codecov
+        if: ${{ matrix.target == 'iOS' && !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
