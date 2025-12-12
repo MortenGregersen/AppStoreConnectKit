@@ -58,6 +58,9 @@ public class APIKeyController {
      - Parameter apiKey: The API key to add.
      */
     public func addAPIKey(_ apiKey: APIKey) throws {
+        if apiKeys == nil {
+            try loadAPIKeys()
+        }
         do {
             try keychain.addGenericPassword(forService: service, password: apiKey.getGenericPassword())
         } catch KeychainError.duplicatePassword {
@@ -79,6 +82,9 @@ public class APIKeyController {
      - Parameter apiKey: The API key to delete.
      */
     public func deleteAPIKey(_ apiKey: APIKey) throws {
+        if apiKeys == nil {
+            try loadAPIKeys()
+        }
         try keychain.deleteGenericPassword(forService: service, password: apiKey.getGenericPassword())
         guard var apiKeys, let index = apiKeys.firstIndex(where: { $0.keyId == apiKey.keyId }) else {
             return
