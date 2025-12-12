@@ -9,6 +9,10 @@ public class APIKeyController {
     /// The list of API keys.
     public private(set) var apiKeys: [APIKey]?
     /// The currently selected API key.
+    ///
+    /// Deprecated: The concept of a "selected API key" will be removed in a future version.
+    /// Persist and manage selection state outside of APIKeyController.
+    @available(*, deprecated, message: "The concept of a selected API key is deprecated and will be removed in a future version. Persist and manage selection outside of APIKeyController.")
     public var selectedAPIKey: APIKey? {
         didSet {
             if let selectedAPIKey {
@@ -38,6 +42,9 @@ public class APIKeyController {
     }
 
     /// Loads the API keys from the keychain.
+    ///
+    /// Note: This method currently auto-selects an API key if one is available (matching the persisted selection, or the first key).
+    /// The auto-selection side effect is deprecated and will be removed in a future version. Do not rely on it.
     public func loadAPIKeys() throws {
         let apiKeys = try keychain.listGenericPasswords(forService: service)
             .map { password -> APIKey in
@@ -56,6 +63,9 @@ public class APIKeyController {
      Adds a new API key to the keychain.
 
      - Parameter apiKey: The API key to add.
+
+     Note: This method currently auto-selects the key if it is the first one added.
+     The auto-selection side effect is deprecated and will be removed in a future version. Do not rely on it.
      */
     public func addAPIKey(_ apiKey: APIKey) throws {
         if apiKeys == nil {
