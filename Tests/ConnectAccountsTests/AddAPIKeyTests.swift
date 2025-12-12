@@ -20,29 +20,27 @@ struct AddAPIKeyTests {
         let mockKeychain = MockKeychain()
         let controller = APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
         #expect(controller.apiKeys == nil)
-        #expect(controller.selectedAPIKey == nil)
         #expect(mockKeychain.genericPasswordsInKeychain.isEmpty)
         // Act
         try controller.addAPIKey(apiKey)
         // Assert
         #expect(controller.apiKeys == [apiKey])
-        #expect(controller.selectedAPIKey == apiKey)
         #expect(try mockKeychain.genericPasswordsInKeychain == [apiKey.getGenericPassword()])
     }
 
     @Test("Add API Key - Duplicate error")
-    func addAPIKey_Duplicate() {
+    func addAPIKey_Duplicate() throws {
         // Arrange
         let mockKeychain = MockKeychain()
-        mockKeychain.returnStatusForAdd = errSecDuplicateItem
         let controller = APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
+        try controller.addAPIKey(apiKey)
+        #expect(controller.apiKeys == [apiKey])
         // Act
         #expect(throws: APIKeyError.duplicateAPIKey) {
             try controller.addAPIKey(apiKey)
         }
         // Assert
-        #expect(controller.apiKeys == nil)
-        #expect(controller.selectedAPIKey == nil)
+        #expect(controller.apiKeys == [apiKey])
     }
 
     @Test("Add API Key - Unknown error")
@@ -52,12 +50,12 @@ struct AddAPIKeyTests {
         let mockKeychain = MockKeychain()
         mockKeychain.returnStatusForAdd = status
         let controller = APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
+        #expect(controller.apiKeys == nil)
         // Act
         #expect(throws: APIKeyError.failedAddingAPIKey(status)) {
             try controller.addAPIKey(apiKey)
         }
         // Assert
-        #expect(controller.apiKeys == nil)
-        #expect(controller.selectedAPIKey == nil)
+        #expect(controller.apiKeys == [])
     }
 }
