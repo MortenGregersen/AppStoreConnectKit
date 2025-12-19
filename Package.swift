@@ -21,7 +21,7 @@ let package = Package(
         .library(name: "ConnectBagbutikFormatting", targets: ["ConnectBagbutikFormatting"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/MortenGregersen/Bagbutik", from: "18.1.0"),
+        .package(url: "https://github.com/MortenGregersen/Bagbutik", from: "19.0.0"),
         .package(url: "https://github.com/cbaker6/CertificateSigningRequest", from: "1.30.0"),
     ],
     targets: [
