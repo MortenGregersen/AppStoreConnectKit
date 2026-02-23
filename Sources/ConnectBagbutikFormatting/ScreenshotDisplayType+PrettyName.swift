@@ -5,7 +5,7 @@
 //  Created by Morten Bjerg Gregersen on 02/10/2025.
 //
 
-import Bagbutik_Models
+import Bagbutik
 
 /// Extension to provide a pretty name for each `ScreenshotDisplayType`.
 public extension ScreenshotDisplayType {
@@ -45,6 +45,7 @@ public extension ScreenshotDisplayType {
         case .iMessageAppIpadPro129: #"iPad Pro (2nd Gen) 12.9" Display"#
         case .iMessageAppIpad105: #"iPad 10.5" Display"#
         case .iMessageAppIpad97: #"iPad 9.7" Display"#
+        @unknown default: "Unknown Display"
         }
     }
 }

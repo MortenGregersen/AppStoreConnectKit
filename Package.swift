@@ -21,7 +21,6 @@ let package = Package(
         .library(name: "ConnectBagbutikFormatting", targets: ["ConnectBagbutikFormatting"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/MortenGregersen/Bagbutik", from: "19.0.0"),
         .package(url: "https://github.com/cbaker6/CertificateSigningRequest", from: "1.30.0"),
     ],
     targets: [
@@ -32,23 +31,29 @@ let package = Package(
         .target(name: "ConnectKeychain", dependencies: ["ConnectCore"]),
         .testTarget(name: "ConnectKeychainTests", dependencies: ["ConnectKeychain"]),
         // ConnectAccounts
-        .target(name: "ConnectAccounts", dependencies: ["ConnectKeychain", .product(name: "Bagbutik", package: "Bagbutik")]),
+        .target(name: "ConnectAccounts", dependencies: ["ConnectKeychain", "Bagbutik"]),
         .testTarget(name: "ConnectAccountsTests", dependencies: ["ConnectAccounts", "ConnectTestSupport"]),
         // ConnectAccountsUI
-        .target(name: "ConnectAccountsUI", dependencies: ["ConnectAccounts", .product(name: "Bagbutik", package: "Bagbutik")]),
+        .target(name: "ConnectAccountsUI", dependencies: ["ConnectAccounts", "Bagbutik"]),
         // ConnectClient
-        .target(name: "ConnectClient", dependencies: [.product(name: "Bagbutik", package: "Bagbutik")]),
+        .target(name: "ConnectClient", dependencies: ["Bagbutik"]),
         // ConnectProvisioning
         .target(name: "ConnectProvisioning", dependencies: [
             "ConnectClient",
             "ConnectKeychain",
             "CertificateSigningRequest",
-            .product(name: "Bagbutik", package: "Bagbutik")
+            "Bagbutik"
         ]),
         .testTarget(name: "ConnectProvisioningTests", dependencies: ["ConnectProvisioning", "ConnectTestSupport"]),
         // ConnectBagbutikFormatting
-        .target(name: "ConnectBagbutikFormatting", dependencies: [.product(name: "Bagbutik", package: "Bagbutik")]),
+        .target(name: "ConnectBagbutikFormatting", dependencies: ["Bagbutik"]),
         // ConnectTestSupport
         .target(name: "ConnectTestSupport", dependencies: ["ConnectKeychain", "ConnectClient"]),
+        // Bagbutik binary target
+        .binaryTarget(
+            name: "Bagbutik",
+            url: "https://github.com/MortenGregersen/Bagbutik/releases/download/19.0.1-pre9/Bagbutik.xcframework.zip",
+            checksum: "3aff5b7a905057677b1e4650a1673af0f46ffee46792e302da602ee48be02615"
+        ),
     ]
 )

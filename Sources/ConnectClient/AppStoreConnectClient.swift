@@ -5,7 +5,7 @@
 //  Created by Morten Bjerg Gregersen on 08/05/2025.
 //
 
-import Bagbutik_Core
+import Bagbutik
 import Foundation
 
 /// A client for interacting with the App Store Connect API.
