@@ -5,7 +5,7 @@
 //  Created by Morten Bjerg Gregersen on 03/10/2025.
 //
 
-import Bagbutik_Core
+import Bagbutik
 import ConnectClient
 import Foundation
 
