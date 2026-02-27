@@ -49,11 +49,11 @@ let package = Package(
         .target(name: "ConnectBagbutikFormatting", dependencies: ["Bagbutik"]),
         // ConnectTestSupport
         .target(name: "ConnectTestSupport", dependencies: ["ConnectKeychain", "ConnectClient"]),
-        // Bagbutik binary target
+        // Bagbutik XCFramework target
         .binaryTarget(
             name: "Bagbutik",
-            url: "https://github.com/MortenGregersen/Bagbutik/releases/download/19.0.1-pre9/Bagbutik.xcframework.zip",
-            checksum: "3aff5b7a905057677b1e4650a1673af0f46ffee46792e302da602ee48be02615"
+            url: "https://github.com/MortenGregersen/Bagbutik/releases/download/19.1.0/Bagbutik.xcframework.zip",
+            checksum: "f0a5afcfe7886027c77995ea1a12dc4bb48b067e2dbc92cf9acf99b98843c8c1"
         ),
     ]
 )
