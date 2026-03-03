@@ -5,7 +5,7 @@
 //  Created by Morten Bjerg Gregersen on 02/10/2025.
 //
 
-import Bagbutik
+import Bagbutik_Core
 import Foundation
 
 /**
