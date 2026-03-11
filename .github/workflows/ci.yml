@@ -33,10 +33,11 @@ jobs:
             swift test -v
           else
             gem install xcpretty --no-document
+            set -o pipefail
             xcodebuild test \
               -scheme AppStoreConnectKit-Package \
               -sdk iphonesimulator \
-              -destination "platform=iOS Simulator,name=iPhone 17,OS=26.3" \
+              -destination "platform=iOS Simulator,name=iPhone 17,OS=26.2" \
               -enableCodeCoverage YES \
               CODE_SIGNING_ALLOWED=NO | xcpretty -r junit --output junit.xml
           fi
