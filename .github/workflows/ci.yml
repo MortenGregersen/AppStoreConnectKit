@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         version:
-          - "26.1"
+          - "26.3"
         target:
           - "macOS"
           - "iOS"
@@ -36,7 +36,7 @@ jobs:
             xcodebuild test \
               -scheme AppStoreConnectKit-Package \
               -sdk iphonesimulator \
-              -destination "platform=iOS Simulator,name=iPhone 17,OS=26.1" \
+              -destination "platform=iOS Simulator,name=iPhone 17,OS=26.3" \
               -enableCodeCoverage YES \
               CODE_SIGNING_ALLOWED=NO | xcpretty -r junit --output junit.xml
           fi
