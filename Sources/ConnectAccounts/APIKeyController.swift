@@ -8,18 +8,6 @@ import Foundation
 public class APIKeyController {
     /// The list of API keys.
     public private(set) var apiKeys: [APIKey]?
-    /// The currently selected API key.
-    ///
-    /// Deprecated: The concept of a "selected API key" will be removed in a future version.
-    /// Persist and manage selection state outside of APIKeyController.
-    @available(*, deprecated, message: "The concept of a selected API key is deprecated and will be removed in a future version. Persist and manage selection outside of APIKeyController.")
-    public var selectedAPIKey: APIKey? {
-        didSet {
-            if let selectedAPIKey {
-                selectedAPIKeyId = selectedAPIKey.id
-            }
-        }
-    }
 
     private let service: String
     private let keychain: KeychainProtocol
@@ -54,9 +42,6 @@ public class APIKeyController {
             }
             .sorted { $0.name < $1.name }
         self.apiKeys = apiKeys
-        if let apiKey = apiKeys.first(where: { $0.keyId == selectedAPIKeyId }) ?? apiKeys.first {
-            selectedAPIKey = apiKey
-        }
     }
 
     /**
@@ -79,9 +64,6 @@ public class APIKeyController {
             throw APIKeyError.failedAddingAPIKey(status)
         }
         var apiKeys = apiKeys ?? []
-        if apiKeys.isEmpty {
-            selectedAPIKey = apiKey
-        }
         apiKeys.append(apiKey)
         self.apiKeys = apiKeys.sorted(using: KeyPathComparator(\.name))
     }

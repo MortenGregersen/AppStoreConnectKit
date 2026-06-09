@@ -44,7 +44,7 @@ public final class MockBagbutikService: @unchecked Sendable, BagbutikServiceProt
     }
 
     private func decodeResponseData<T>(for request: Request<T, ErrorResponse>) -> Result<T, Error> where T: Decodable {
-        if let jsonData = request.requestBody?.jsonData,
+        if let jsonData = try? request.requestBody?.getJsonData(),
            let json = try? JSONSerialization.jsonObject(with: jsonData, options: []),
            let prettyJsonData = try? JSONSerialization.data(withJSONObject: json, options: [.sortedKeys, .prettyPrinted]),
            let requestBodyJson = String(data: prettyJsonData, encoding: .utf8) {
