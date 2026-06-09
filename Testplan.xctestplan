@@ -36,6 +36,13 @@
     {
       "target" : {
         "containerPath" : "container:",
+        "identifier" : "ConnectClientTests",
+        "name" : "ConnectClientTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
         "identifier" : "ConnectProvisioningTests",
         "name" : "ConnectProvisioningTests"
       }

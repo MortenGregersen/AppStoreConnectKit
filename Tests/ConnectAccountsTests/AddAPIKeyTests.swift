@@ -43,6 +43,36 @@ struct AddAPIKeyTests {
         #expect(controller.apiKeys == [apiKey])
     }
 
+    @Test("Add API Key - Inserts sorted")
+    func addAPIKey_InsertsSorted() throws {
+        // Arrange
+        let banana = try APIKeyFixture.makeAPIKey(name: "Banana", keyId: "BANANA1234")
+        let apple = try APIKeyFixture.makeAPIKey(name: "Apple", keyId: "APPLE1234")
+        let mockKeychain = MockKeychain()
+        let controller = APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
+        try controller.addAPIKey(banana)
+        // Act
+        try controller.addAPIKey(apple)
+        // Assert
+        #expect(controller.apiKeys == [apple, banana])
+    }
+
+    @Test("Add API Key - Loads before adding")
+    func addAPIKey_LoadsBeforeAdding() throws {
+        // Arrange
+        let apple = try APIKeyFixture.makeAPIKey(name: "Apple", keyId: "APPLE1234")
+        let banana = try APIKeyFixture.makeAPIKey(name: "Banana", keyId: "BANANA1234")
+        let mockKeychain = MockKeychain()
+        mockKeychain.genericPasswordsInKeychain = try [banana.getGenericPassword()]
+        let controller = APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
+        #expect(controller.apiKeys == nil)
+        // Act
+        try controller.addAPIKey(apple)
+        // Assert
+        #expect(controller.apiKeys == [apple, banana])
+        #expect(mockKeychain.genericPasswordsInKeychain.count == 2)
+    }
+
     @Test("Add API Key - Unknown error")
     func addAPIKey_Unknown() {
         // Arrange

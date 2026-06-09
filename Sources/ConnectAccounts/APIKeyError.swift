@@ -18,7 +18,7 @@ public enum APIKeyError: LocalizedError, Equatable {
         case .duplicateAPIKey:
             "The API Key is already in Keychain"
         case .failedAddingAPIKey(let status):
-            "The API Key could not be added to Keychain (OSStatus: \(status)"
+            "The API Key could not be added to Keychain (OSStatus: \(status))"
         case .apiKeyNotInKeychain(let keyId):
             "The API Key with the key ID '\(keyId)' was not found in Keychain."
         }
