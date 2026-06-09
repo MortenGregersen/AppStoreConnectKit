@@ -1,6 +1,7 @@
 @testable import ConnectAccounts
 import ConnectKeychain
 import ConnectTestSupport
+import Foundation
 import Security
 import Testing
 
@@ -44,5 +45,47 @@ struct DeleteAPIKeyTests {
         }
         // Assert
         #expect(controller.apiKeys == [apiKey])
+    }
+
+    @Test("Delete API Key - Loads before deleting")
+    func deleteAPIKey_LoadsBeforeDeleting() throws {
+        // Arrange
+        let apple = try APIKeyFixture.makeAPIKey(name: "Apple", keyId: "APPLE1234")
+        let banana = try APIKeyFixture.makeAPIKey(name: "Banana", keyId: "BANANA1234")
+        let mockKeychain = MockKeychain()
+        mockKeychain.genericPasswordsInKeychain = try [apple.getGenericPassword(), banana.getGenericPassword()]
+        let controller = APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
+        #expect(controller.apiKeys == nil)
+        // Act
+        try controller.deleteAPIKey(banana)
+        // Assert
+        #expect(controller.apiKeys == [apple])
+        #expect(try mockKeychain.genericPasswordsInKeychain == [apple.getGenericPassword()])
+    }
+
+    @Test("Delete API Key - Missing loaded key throws and leaves state unchanged")
+    func deleteAPIKey_MissingLoadedKeyThrowsAndLeavesStateUnchanged() throws {
+        // Arrange
+        let apple = try APIKeyFixture.makeAPIKey(name: "Apple", keyId: "APPLE1234")
+        let banana = try APIKeyFixture.makeAPIKey(name: "Banana", keyId: "BANANA1234")
+        let mockKeychain = MockKeychain()
+        mockKeychain.genericPasswordsInKeychain = try [apple.getGenericPassword()]
+        let controller = APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
+        try controller.loadAPIKeys()
+        // Act
+        #expect(throws: KeychainError.failedDeletingPassword) {
+            try controller.deleteAPIKey(banana)
+        }
+        // Assert
+        #expect(controller.apiKeys == [apple])
+        #expect(try mockKeychain.genericPasswordsInKeychain == [apple.getGenericPassword()])
+    }
+
+    @Test("Preview controller uses supplied keys")
+    func previewControllerUsesSuppliedKeys() throws {
+        let apiKeys = try [APIKeyFixture.makeAPIKey()]
+        let controller = APIKeyController.forPreview(apiKeys: apiKeys)
+
+        #expect(controller.apiKeys == apiKeys)
     }
 }

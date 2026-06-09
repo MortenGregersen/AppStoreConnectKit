@@ -29,6 +29,20 @@ struct ListAPIKeysTests {
         #expect(await controller.apiKeys == [valid])
     }
 
+    @Test("List API Keys - Sorted by name")
+    func listAPIKeys_SortedByName() async throws {
+        // Arrange
+        let banana = try APIKeyFixture.makeAPIKey(name: "Banana", keyId: "BANANA1234")
+        let apple = try APIKeyFixture.makeAPIKey(name: "Apple", keyId: "APPLE1234")
+        let mockKeychain = MockKeychain()
+        mockKeychain.genericPasswordsInKeychain = try [banana.getGenericPassword(), apple.getGenericPassword()]
+        let controller = await APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
+        // Act
+        try await controller.loadAPIKeys()
+        // Assert
+        #expect(await controller.apiKeys == [apple, banana])
+    }
+
     @Test("List API Keys - Invalid issuer")
     func listAPIKeys_InvalidIssuer() async throws {
         // Arrange
