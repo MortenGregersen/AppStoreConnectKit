@@ -63,18 +63,22 @@ struct DeleteAPIKeyTests {
         #expect(try mockKeychain.genericPasswordsInKeychain == [apple.getGenericPassword()])
     }
 
-    @Test("Delete API Key - Missing loaded key leaves state unchanged")
-    func deleteAPIKey_MissingLoadedKeyLeavesStateUnchanged() throws {
+    @Test("Delete API Key - Missing loaded key throws and leaves state unchanged")
+    func deleteAPIKey_MissingLoadedKeyThrowsAndLeavesStateUnchanged() throws {
         // Arrange
         let apple = try APIKeyFixture.makeAPIKey(name: "Apple", keyId: "APPLE1234")
         let banana = try APIKeyFixture.makeAPIKey(name: "Banana", keyId: "BANANA1234")
-        let keychain = DeleteSucceedsKeychain(passwordsToList: try [apple.getGenericPassword()])
-        let controller = APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: keychain)
+        let mockKeychain = MockKeychain()
+        mockKeychain.genericPasswordsInKeychain = try [apple.getGenericPassword()]
+        let controller = APIKeyController(keychainServiceName: "AppStoreConnectKit", keychain: mockKeychain)
         try controller.loadAPIKeys()
         // Act
-        try controller.deleteAPIKey(banana)
+        #expect(throws: KeychainError.failedDeletingPassword) {
+            try controller.deleteAPIKey(banana)
+        }
         // Assert
         #expect(controller.apiKeys == [apple])
+        #expect(try mockKeychain.genericPasswordsInKeychain == [apple.getGenericPassword()])
     }
 
     @Test("Preview controller uses supplied keys")
@@ -84,50 +88,4 @@ struct DeleteAPIKeyTests {
 
         #expect(controller.apiKeys == apiKeys)
     }
-}
-
-final class DeleteSucceedsKeychain: KeychainProtocol {
-    let passwordsToList: [GenericPassword]
-
-    init(passwordsToList: [GenericPassword]) {
-        self.passwordsToList = passwordsToList
-    }
-
-    func addCertificate(certificate: SecCertificate, named name: String) throws {
-        fatalError("Not used")
-    }
-
-    func hasCertificate(serialNumber: String) async throws -> Bool {
-        fatalError("Not used")
-    }
-
-    func hasCertificates(serialNumbers: [String]) throws -> [String: Bool] {
-        fatalError("Not used")
-    }
-
-    func createPrivateKey(labeled label: String) throws -> SecKey {
-        fatalError("Not used")
-    }
-
-    func createPublicKey(from privateKey: SecKey) throws -> (key: SecKey, data: Data) {
-        fatalError("Not used")
-    }
-
-    func getGenericPassword(forService service: String, account: String) throws -> GenericPassword? {
-        fatalError("Not used")
-    }
-
-    func listGenericPasswords(forService service: String) throws -> [GenericPassword] {
-        passwordsToList
-    }
-
-    func addGenericPassword(forService service: String, password: GenericPassword) throws {
-        fatalError("Not used")
-    }
-
-    func updateGenericPassword(forService service: String, password: GenericPassword) throws {
-        fatalError("Not used")
-    }
-
-    func deleteGenericPassword(forService service: String, password: GenericPassword) throws {}
 }
