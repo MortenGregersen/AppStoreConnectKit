@@ -1,13 +1,13 @@
 {
-  "originHash" : "42dd597cf568196d5f1827009529e8f84db201ab59ae03fb0a95ce0786e2e31d",
+  "originHash" : "46e1a04cc8ae63b99cbaa4c03e1675c929116f5f13bf8a6e56e45ddaf8b13cb9",
   "pins" : [
     {
       "identity" : "bagbutik",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/MortenGregersen/Bagbutik",
       "state" : {
-        "revision" : "df1d529d10052fb74f5fd9b626f9dd9c39d894d9",
-        "version" : "22.0.0"
+        "revision" : "b56a40eaff970bcc3992af14d935c9f8d97e8796",
+        "version" : "23.0.0"
       }
     },
     {
@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-argument-parser",
       "state" : {
-        "revision" : "c5d11a805e765f52ba34ec7284bd4fcd6ba68615",
-        "version" : "1.7.0"
+        "revision" : "6a52f3251125d74daf04fcbd5e6f08a75d074382",
+        "version" : "1.8.2"
       }
     },
     {
@@ -33,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-asn1.git",
       "state" : {
-        "revision" : "810496cf121e525d660cd0ea89a758740476b85f",
-        "version" : "1.5.1"
+        "revision" : "a9a5efd40eaf558a2bcd48d64b1d1646be686008",
+        "version" : "1.7.1"
       }
     },
     {
