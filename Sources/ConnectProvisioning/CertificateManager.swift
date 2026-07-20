@@ -120,9 +120,3 @@ public class CertificateManager {
         try keychain.addCertificate(certificate: secCertificate, named: name)
     }
 }
-
-extension CertificateSigningRequest {
-    static func create() -> CertificateSigningRequest {
-        CertificateSigningRequest()
-    }
-}
