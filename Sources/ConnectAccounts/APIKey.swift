@@ -1,4 +1,4 @@
-import Bagbutik_Core
+import Bagbutik
 import ConnectKeychain
 import Foundation
 

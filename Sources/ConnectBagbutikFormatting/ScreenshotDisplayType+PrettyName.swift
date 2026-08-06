@@ -5,7 +5,7 @@
 //  Created by Morten Bjerg Gregersen on 02/10/2025.
 //
 
-import Bagbutik_Models
+import Bagbutik
 
 /// Extension to provide a pretty name for each `ScreenshotDisplayType`.
 public extension ScreenshotDisplayType {
