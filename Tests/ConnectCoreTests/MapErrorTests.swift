@@ -1,4 +1,4 @@
-import Bagbutik
+import BagbutikCore
 @testable import ConnectCore
 import Foundation
 import Testing

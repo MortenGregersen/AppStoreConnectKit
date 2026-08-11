@@ -2,6 +2,18 @@
 
 import PackageDescription
 
+let bagbutikCoreDependencies: [Target.Dependency] = [
+    .product(name: "BagbutikCore", package: "Bagbutik-Binary"),
+]
+
+let bagbutikAppStoreDependencies = bagbutikCoreDependencies + [
+    .product(name: "BagbutikAppStore", package: "Bagbutik-Binary"),
+]
+
+let bagbutikProvisioningDependencies = bagbutikAppStoreDependencies + [
+    .product(name: "BagbutikProvisioning", package: "Bagbutik-Binary"),
+]
+
 let package = Package(
     name: "AppStoreConnectKit",
     platforms: [
@@ -21,35 +33,34 @@ let package = Package(
         .library(name: "ConnectBagbutikFormatting", targets: ["ConnectBagbutikFormatting"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/MortenGregersen/Bagbutik", from: "24.0.0"),
+        .package(url: "https://github.com/MortenGregersen/Bagbutik-Binary", exact: "24.0.0-pre3"),
         .package(url: "https://github.com/cbaker6/CertificateSigningRequest", from: "1.30.0"),
     ],
     targets: [
         // ConnectCore
-        .target(name: "ConnectCore", dependencies: ["ConnectBagbutikFormatting"]),
-        .testTarget(name: "ConnectCoreTests", dependencies: ["ConnectCore"]),
+        .target(name: "ConnectCore", dependencies: bagbutikAppStoreDependencies + ["ConnectBagbutikFormatting"]),
+        .testTarget(name: "ConnectCoreTests", dependencies: bagbutikAppStoreDependencies + ["ConnectCore"]),
         // ConnectKeychain
         .target(name: "ConnectKeychain", dependencies: ["ConnectCore"]),
         .testTarget(name: "ConnectKeychainTests", dependencies: ["ConnectKeychain"]),
         // ConnectAccounts
-        .target(name: "ConnectAccounts", dependencies: ["ConnectKeychain", .product(name: "Bagbutik", package: "Bagbutik")]),
-        .testTarget(name: "ConnectAccountsTests", dependencies: ["ConnectAccounts", "ConnectTestSupport"]),
+        .target(name: "ConnectAccounts", dependencies: bagbutikCoreDependencies + ["ConnectKeychain"]),
+        .testTarget(name: "ConnectAccountsTests", dependencies: bagbutikCoreDependencies + ["ConnectAccounts", "ConnectTestSupport"]),
         // ConnectAccountsUI
-        .target(name: "ConnectAccountsUI", dependencies: ["ConnectAccounts", .product(name: "Bagbutik", package: "Bagbutik")]),
+        .target(name: "ConnectAccountsUI", dependencies: bagbutikCoreDependencies + ["ConnectAccounts"]),
         // ConnectClient
-        .target(name: "ConnectClient", dependencies: [.product(name: "Bagbutik", package: "Bagbutik")]),
-        .testTarget(name: "ConnectClientTests", dependencies: ["ConnectClient", "ConnectTestSupport"]),
+        .target(name: "ConnectClient", dependencies: bagbutikCoreDependencies),
+        .testTarget(name: "ConnectClientTests", dependencies: bagbutikCoreDependencies + ["ConnectClient", "ConnectTestSupport"]),
         // ConnectProvisioning
         .target(name: "ConnectProvisioning", dependencies: [
             "ConnectClient",
             "ConnectKeychain",
             "CertificateSigningRequest",
-            .product(name: "Bagbutik", package: "Bagbutik")
-        ]),
-        .testTarget(name: "ConnectProvisioningTests", dependencies: ["ConnectProvisioning", "ConnectTestSupport"]),
+        ] + bagbutikProvisioningDependencies),
+        .testTarget(name: "ConnectProvisioningTests", dependencies: bagbutikProvisioningDependencies + ["ConnectProvisioning", "ConnectTestSupport"]),
         // ConnectBagbutikFormatting
-        .target(name: "ConnectBagbutikFormatting", dependencies: [.product(name: "Bagbutik", package: "Bagbutik")]),
+        .target(name: "ConnectBagbutikFormatting", dependencies: bagbutikAppStoreDependencies),
         // ConnectTestSupport
-        .target(name: "ConnectTestSupport", dependencies: ["ConnectKeychain", "ConnectClient"]),
+        .target(name: "ConnectTestSupport", dependencies: bagbutikCoreDependencies + ["ConnectKeychain", "ConnectClient"]),
     ]
 )
