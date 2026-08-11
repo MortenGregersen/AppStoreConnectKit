@@ -1,4 +1,4 @@
-import Bagbutik
+import BagbutikCore
 @testable import ConnectClient
 import ConnectTestSupport
 import Testing
