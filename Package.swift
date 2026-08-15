@@ -33,7 +33,7 @@ let package = Package(
         .library(name: "ConnectBagbutikFormatting", targets: ["ConnectBagbutikFormatting"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/MortenGregersen/Bagbutik-Binary", exact: "24.0.0-pre5"),
+        .package(url: "https://github.com/MortenGregersen/Bagbutik-Binary", exact: "24.0.0"),
         .package(url: "https://github.com/cbaker6/CertificateSigningRequest", from: "1.30.0"),
     ],
     targets: [
