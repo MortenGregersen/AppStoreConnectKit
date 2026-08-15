@@ -37,7 +37,7 @@ With the `GenerateAPIKeyView`, you can present a SwiftUI View for the user, that
 Add this package to your `Package.swift` dependencies:
 
 ```
-.package(url: "https://github.com/mortengregersen/appstoreconnectkit.git", from: "0.1.0")
+.package(url: "https://github.com/mortengregersen/appstoreconnectkit.git", from: "2.0.0")
 ```
 
 ## Libraries
