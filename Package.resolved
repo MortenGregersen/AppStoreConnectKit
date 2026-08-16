@@ -6,7 +6,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/MortenGregersen/Bagbutik-Binary",
       "state" : {
-        "revision" : "519fdd5291c41e593db3ff3559721f045ebc37e4",
+        "revision" : "c0bf00ef06b33172aeca7dee19231d9498ce4242",
         "version" : "24.0.0"
       }
     },
