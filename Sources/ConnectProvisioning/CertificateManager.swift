@@ -5,8 +5,9 @@
 //  Created by Morten Bjerg Gregersen on 03/10/2025.
 //
 
-import Bagbutik_Models
-import Bagbutik_Provisioning
+import BagbutikCore
+import BagbutikProvisioning
+import BagbutikProvisioningModels
 import CertificateSigningRequest
 import ConnectClient
 import ConnectKeychain

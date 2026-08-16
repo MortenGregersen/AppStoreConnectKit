@@ -1,4 +1,5 @@
-import Bagbutik_Core
+import BagbutikAppStoreModels
+import BagbutikCore
 @testable import ConnectCore
 import Foundation
 import Testing

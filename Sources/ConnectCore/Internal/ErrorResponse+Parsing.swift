@@ -5,8 +5,8 @@
 //  Created by Morten Bjerg Gregersen on 02/10/2025.
 //
 
-import Bagbutik_Core
-import Bagbutik_Models
+import BagbutikAppStoreModels
+import BagbutikCore
 import ConnectBagbutikFormatting
 import Foundation
 
