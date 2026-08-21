@@ -1,13 +1,13 @@
 {
-  "originHash" : "4b9e200c265dbd066b1d4feb5c82a233cca2906a35a9e1cc2f8ea4327a2bb0d1",
+  "originHash" : "c8cb65b9d3f1b981db576a525212679e5b446dcb03c0883cc4bba9ed34e51196",
   "pins" : [
     {
       "identity" : "bagbutik-binary",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/MortenGregersen/Bagbutik-Binary",
       "state" : {
-        "revision" : "6817518754d53aeec71989bd95b8e6f6569ffd77",
-        "version" : "24.0.2"
+        "revision" : "a6a5e015431c75235a445e41521540ac3bafbcbd",
+        "version" : "24.0.3"
       }
     },
     {
