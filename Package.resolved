@@ -1,12 +1,12 @@
 {
-  "originHash" : "c8cb65b9d3f1b981db576a525212679e5b446dcb03c0883cc4bba9ed34e51196",
+  "originHash" : "0dfbb3a1be187877362c0974959f36578e5086acc5366bf9a061aafcb8ef7021",
   "pins" : [
     {
-      "identity" : "bagbutik-binary",
+      "identity" : "bagbutik",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/MortenGregersen/Bagbutik-Binary",
+      "location" : "https://github.com/MortenGregersen/Bagbutik",
       "state" : {
-        "revision" : "a6a5e015431c75235a445e41521540ac3bafbcbd",
+        "revision" : "156b1e2d309f71857e4693f058d6fd1b672b4c45",
         "version" : "24.0.3"
       }
     },
@@ -17,6 +17,24 @@
       "state" : {
         "revision" : "457627f8ff57a721851ee14cc552d529c37c8329",
         "version" : "1.30.0"
+      }
+    },
+    {
+      "identity" : "swift-asn1",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-asn1.git",
+      "state" : {
+        "revision" : "a9a5efd40eaf558a2bcd48d64b1d1646be686008",
+        "version" : "1.7.1"
+      }
+    },
+    {
+      "identity" : "swift-crypto",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-crypto",
+      "state" : {
+        "revision" : "95ba0316a9b733e92bb6b071255ff46263bbe7dc",
+        "version" : "3.15.1"
       }
     }
   ],

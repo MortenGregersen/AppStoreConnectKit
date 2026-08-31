@@ -3,15 +3,15 @@
 import PackageDescription
 
 let bagbutikCoreDependencies: [Target.Dependency] = [
-    .product(name: "BagbutikCore", package: "Bagbutik-Binary"),
+    .product(name: "BagbutikCore", package: "Bagbutik"),
 ]
 
 let bagbutikAppStoreDependencies = bagbutikCoreDependencies + [
-    .product(name: "BagbutikAppStore", package: "Bagbutik-Binary"),
+    .product(name: "BagbutikAppStore", package: "Bagbutik"),
 ]
 
 let bagbutikProvisioningDependencies = bagbutikAppStoreDependencies + [
-    .product(name: "BagbutikProvisioning", package: "Bagbutik-Binary"),
+    .product(name: "BagbutikProvisioning", package: "Bagbutik"),
 ]
 
 let package = Package(
@@ -33,7 +33,7 @@ let package = Package(
         .library(name: "ConnectBagbutikFormatting", targets: ["ConnectBagbutikFormatting"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/MortenGregersen/Bagbutik-Binary", exact: "24.0.3"),
+        .package(url: "https://github.com/MortenGregersen/Bagbutik", exact: "24.0.3"),
         .package(url: "https://github.com/cbaker6/CertificateSigningRequest", from: "1.30.0"),
     ],
     targets: [
