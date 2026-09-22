@@ -8,7 +8,7 @@
 import Foundation
 
 /// Represents a keychain for storing and retrieving certificates, keys, and generic passwords.
-public protocol KeychainProtocol {
+public protocol KeychainProtocol: Sendable {
     /**
      Adds a certificate to the keychain with the specified name.
 
@@ -97,18 +97,18 @@ public protocol KeychainProtocol {
 }
 
 public struct Keychain: KeychainProtocol, Sendable {
-    private let accessGroup: String
+    private let accessGroup: String?
 
     /**
      Initializes a new instance of `Keychain` with the specified access group.
 
-     - Parameter accessGroup: The access group for the keychain (set in Signing and Capabilites for the target).
+     - Parameter accessGroup: The access group for the keychain (set in Signing and Capabilites for the target) - not required.
      */
-    public init(accessGroup: String) {
+    public init(accessGroup: String? = nil) {
         self.accessGroup = accessGroup
     }
 
-    init(accessGroup: String,
+    init(accessGroup: String?,
          secItemCopyMatching: @Sendable @escaping (CFDictionary, UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus = SecItemCopyMatching,
          secItemAdd: @Sendable @escaping (CFDictionary, UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus = SecItemAdd,
          secItemUpdate: @Sendable @escaping (CFDictionary, CFDictionary) -> OSStatus = SecItemUpdate,
@@ -314,11 +314,14 @@ public struct Keychain: KeychainProtocol, Sendable {
     }
 
     private var dataProtectionAttributes: [AnyHashable: Any] {
-        [
+        var attributes: [AnyHashable: Any] = [
             kSecUseDataProtectionKeychain: true,
-            kSecAttrAccessGroup: accessGroup,
             kSecAttrSynchronizable: true,
         ]
+        if let accessGroup {
+            attributes[kSecAttrAccessGroup] = accessGroup
+        }
+        return attributes
     }
 
     var secItemCopyMatching = SecItemCopyMatching
@@ -335,6 +338,6 @@ public struct Keychain: KeychainProtocol, Sendable {
 public extension Keychain {
     /// A `Keychain instance configured for use in previews and tests.
     static func forPreview() -> Keychain {
-        .init(accessGroup: "AppStoreConnectKit.Keychain-Preview")
+        .init()
     }
 }
