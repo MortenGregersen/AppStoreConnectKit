@@ -71,6 +71,35 @@ struct KeychainTests {
         try keychain.addGenericPassword(forService: "AppDab", password: genericPassword)
     }
 
+    #if os(macOS)
+    @Test("Login Keychain works without app identity entitlements")
+    func macOSLoginGenericPasswords() throws {
+        // An unsigned command line tool receives this status when a generic
+        // password query opts into the data protection or synchronized store.
+        let keychain = Keychain(
+            accessGroup: nil,
+            storage: .macOSLogin,
+            secItemCopyMatching: { query, _ in
+                let status = EntitlementGate.status(query)
+                return status == errSecSuccess ? errSecItemNotFound : status
+            },
+            secItemAdd: { query, _ in EntitlementGate.status(query) },
+            secItemUpdate: { query, changes in
+                let queryStatus = EntitlementGate.status(query)
+                return queryStatus == errSecSuccess ? EntitlementGate.status(changes) : queryStatus
+            },
+            secItemDelete: { query in EntitlementGate.status(query) }
+        )
+        let password = GenericPassword(account: "test-account", label: "Test", generic: Data(), value: Data("secret".utf8))
+
+        #expect(try keychain.listGenericPasswords(forService: "AppDabCLI").isEmpty)
+        try keychain.addGenericPassword(forService: "AppDabCLI", password: password)
+        try keychain.updateGenericPassword(forService: "AppDabCLI", password: password)
+        try keychain.deleteGenericPassword(forService: "AppDabCLI", password: password)
+        _ = Keychain.macOSLogin()
+    }
+    #endif
+
     @Test("Add generic password - Duplicate")
     func addGenericPassword_Duplicate() {
         let keychain = Keychain(accessGroup: "Test", secItemAdd: { _, _ in errSecDuplicateItem })
@@ -130,3 +159,13 @@ struct KeychainTests {
 extension Tag {
     @Tag static var keychain: Self
 }
+
+#if os(macOS)
+private enum EntitlementGate {
+    static func status(_ query: CFDictionary) -> OSStatus {
+        let attributes = query as NSDictionary
+        return attributes[kSecUseDataProtectionKeychain] == nil && attributes[kSecAttrSynchronizable] == nil
+            ? errSecSuccess : errSecMissingEntitlement
+    }
+}
+#endif

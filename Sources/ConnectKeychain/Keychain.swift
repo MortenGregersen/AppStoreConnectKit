@@ -97,7 +97,13 @@ public protocol KeychainProtocol: Sendable {
 }
 
 public struct Keychain: KeychainProtocol, Sendable {
+    enum Storage: Sendable {
+        case dataProtection
+        case macOSLogin
+    }
+
     private let accessGroup: String?
+    private let storage: Storage
 
     /**
      Initializes a new instance of `Keychain` with the specified access group.
@@ -106,9 +112,20 @@ public struct Keychain: KeychainProtocol, Sendable {
      */
     public init(accessGroup: String? = nil) {
         self.accessGroup = accessGroup
+        storage = .dataProtection
     }
 
+    #if os(macOS)
+    /// Uses the local macOS login Keychain for an unsigned command line tool.
+    /// Items stored here do not synchronize through iCloud Keychain and do not
+    /// require a Keychain access group entitlement.
+    public static func macOSLogin() -> Self {
+        Self(accessGroup: nil, storage: .macOSLogin)
+    }
+    #endif
+
     init(accessGroup: String?,
+         storage: Storage = .dataProtection,
          secItemCopyMatching: @Sendable @escaping (CFDictionary, UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus = SecItemCopyMatching,
          secItemAdd: @Sendable @escaping (CFDictionary, UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus = SecItemAdd,
          secItemUpdate: @Sendable @escaping (CFDictionary, CFDictionary) -> OSStatus = SecItemUpdate,
@@ -119,6 +136,7 @@ public struct Keychain: KeychainProtocol, Sendable {
          secKeyCopyPublicKey: @Sendable @escaping (SecKey) -> SecKey? = SecKeyCopyPublicKey,
          secKeyCopyExternalRepresentation: @Sendable @escaping (SecKey, UnsafeMutablePointer<Unmanaged<CFError>?>?) -> CFData? = SecKeyCopyExternalRepresentation) {
         self.accessGroup = accessGroup
+        self.storage = storage
         self.secItemCopyMatching = secItemCopyMatching
         self.secItemAdd = secItemAdd
         self.secItemUpdate = secItemUpdate
@@ -314,6 +332,7 @@ public struct Keychain: KeychainProtocol, Sendable {
     }
 
     private var dataProtectionAttributes: [AnyHashable: Any] {
+        guard storage == .dataProtection else { return [:] }
         var attributes: [AnyHashable: Any] = [
             kSecUseDataProtectionKeychain: true,
             kSecAttrSynchronizable: true,
