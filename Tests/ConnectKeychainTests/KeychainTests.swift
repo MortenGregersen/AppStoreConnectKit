@@ -110,6 +110,45 @@ struct KeychainTests {
         try keychain.deleteGenericPassword(forService: "AppDabCLI", password: password)
         _ = Keychain.macOSLogin()
     }
+
+    @Test("Login Keychain lists no accounts when the service has no items")
+    func macOSLoginNoPasswords() throws {
+        let keychain = Keychain(accessGroup: nil, storage: .macOSLogin, secItemCopyMatching: { _, _ in errSecItemNotFound })
+        #expect(try keychain.listGenericPasswords(forService: "AppDabCLI").isEmpty)
+    }
+
+    @Test("Login Keychain rejects account metadata without an account identifier")
+    func macOSLoginMalformedAccountMetadata() {
+        let keychain = Keychain(accessGroup: nil, storage: .macOSLogin, secItemCopyMatching: { _, result in
+            result?.pointee = [[:]] as CFTypeRef
+            return errSecSuccess
+        })
+        #expect(throws: KeychainError.malformedPasswordData) {
+            try keychain.listGenericPasswords(forService: "AppDabCLI")
+        }
+    }
+
+    @Test("Login Keychain preserves a read failure")
+    func macOSLoginReadFailure() {
+        let keychain = Keychain(accessGroup: nil, storage: .macOSLogin, secItemCopyMatching: { _, _ in errSecParam })
+        #expect(throws: KeychainError.errorReadingFromKeychain(errSecParam)) {
+            try keychain.listGenericPasswords(forService: "AppDabCLI")
+        }
+    }
+
+    @Test("Login Keychain rejects an incomplete password item")
+    func macOSLoginIncompletePassword() {
+        let keychain = Keychain(accessGroup: nil, storage: .macOSLogin, secItemCopyMatching: { _, result in
+            result?.pointee = [
+                kSecAttrAccount: "test-account",
+                kSecAttrLabel: "Test",
+            ] as CFTypeRef
+            return errSecSuccess
+        })
+        #expect(throws: KeychainError.malformedPasswordData) {
+            try keychain.getGenericPassword(forService: "AppDabCLI", account: "test-account")
+        }
+    }
     #endif
 
     @Test("Add generic password - Duplicate")
