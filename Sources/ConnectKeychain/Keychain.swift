@@ -251,10 +251,34 @@ public struct Keychain: KeychainProtocol, Sendable {
     }
 
     private func listGenericPasswords(forService service: String, account: String? = nil) throws -> [GenericPassword] {
+        if storage == .macOSLogin && account == nil {
+            // The file based Keychain rejects kSecMatchLimitAll together with
+            // kSecReturnData. Enumerate accounts without secrets, then fetch
+            // each password using a single match query.
+            let query: NSDictionary = [
+                kSecClass: kSecClassGenericPassword,
+                kSecAttrService: service,
+                kSecMatchLimit: kSecMatchLimitAll,
+                kSecReturnAttributes: true,
+            ]
+            var result: CFTypeRef?
+            let status = secItemCopyMatching(query, &result)
+            guard status != errSecItemNotFound else { return [] }
+            guard status == errSecSuccess, let items = result as? [[String: Any]] else {
+                throw KeychainError.errorReadingFromKeychain(status)
+            }
+            return try items.flatMap { item -> [GenericPassword] in
+                guard let account = item[kSecAttrAccount as String] as? String else {
+                    throw KeychainError.malformedPasswordData
+                }
+                return try listGenericPasswords(forService: service, account: account)
+            }
+        }
+
         let query: NSMutableDictionary = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: service,
-            kSecMatchLimit: kSecMatchLimitAll,
+            kSecMatchLimit: storage == .macOSLogin ? kSecMatchLimitOne : kSecMatchLimitAll,
             kSecReturnAttributes: true,
             kSecReturnData: true,
         ]
@@ -265,10 +289,18 @@ public struct Keychain: KeychainProtocol, Sendable {
         var items: CFTypeRef?
         let status = secItemCopyMatching(query, &items)
         guard status != errSecItemNotFound else { return [] }
-        guard status == errSecSuccess, let items = items as? [Any] else {
+        guard status == errSecSuccess else {
             throw KeychainError.errorReadingFromKeychain(status)
         }
-        return try items.map { item -> GenericPassword in
+        let returnedItems: [Any]
+        if let matches = items as? [Any] {
+            returnedItems = matches
+        } else if storage == .macOSLogin, let match = items as? [String: Any] {
+            returnedItems = [match]
+        } else {
+            throw KeychainError.errorReadingFromKeychain(status)
+        }
+        return try returnedItems.map { item -> GenericPassword in
             guard let item = item as? [String: Any],
                   let label = item[kSecAttrLabel as String] as? String,
                   let account = item[kSecAttrAccount as String] as? String,

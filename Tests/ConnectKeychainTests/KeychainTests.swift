@@ -76,12 +76,25 @@ struct KeychainTests {
     func macOSLoginGenericPasswords() throws {
         // An unsigned command line tool receives this status when a generic
         // password query opts into the data protection or synchronized store.
+        let password = GenericPassword(account: "test-account", label: "Test", generic: Data(), value: Data("secret".utf8))
         let keychain = Keychain(
             accessGroup: nil,
             storage: .macOSLogin,
-            secItemCopyMatching: { query, _ in
+            secItemCopyMatching: { query, result in
                 let status = EntitlementGate.status(query)
-                return status == errSecSuccess ? errSecItemNotFound : status
+                guard status == errSecSuccess else { return status }
+                let attributes = query as NSDictionary
+                if attributes[kSecReturnData] != nil {
+                    result?.pointee = [
+                        kSecAttrAccount: password.account,
+                        kSecAttrLabel: password.label,
+                        kSecAttrGeneric: password.generic,
+                        kSecValueData: password.value,
+                    ] as CFTypeRef
+                } else {
+                    result?.pointee = [[kSecAttrAccount: password.account]] as CFTypeRef
+                }
+                return errSecSuccess
             },
             secItemAdd: { query, _ in EntitlementGate.status(query) },
             secItemUpdate: { query, changes in
@@ -90,9 +103,8 @@ struct KeychainTests {
             },
             secItemDelete: { query in EntitlementGate.status(query) }
         )
-        let password = GenericPassword(account: "test-account", label: "Test", generic: Data(), value: Data("secret".utf8))
-
-        #expect(try keychain.listGenericPasswords(forService: "AppDabCLI").isEmpty)
+        #expect(try keychain.listGenericPasswords(forService: "AppDabCLI") == [password])
+        #expect(try keychain.getGenericPassword(forService: "AppDabCLI", account: password.account) == password)
         try keychain.addGenericPassword(forService: "AppDabCLI", password: password)
         try keychain.updateGenericPassword(forService: "AppDabCLI", password: password)
         try keychain.deleteGenericPassword(forService: "AppDabCLI", password: password)
@@ -164,8 +176,14 @@ extension Tag {
 private enum EntitlementGate {
     static func status(_ query: CFDictionary) -> OSStatus {
         let attributes = query as NSDictionary
-        return attributes[kSecUseDataProtectionKeychain] == nil && attributes[kSecAttrSynchronizable] == nil
-            ? errSecSuccess : errSecMissingEntitlement
+        if attributes[kSecUseDataProtectionKeychain] != nil || attributes[kSecAttrSynchronizable] != nil {
+            return errSecMissingEntitlement
+        }
+        if attributes[kSecReturnData] != nil,
+           attributes[kSecMatchLimit] as? String == kSecMatchLimitAll as String {
+            return errSecParam
+        }
+        return errSecSuccess
     }
 }
 #endif
