@@ -30,7 +30,7 @@ jobs:
       - name: Build & Test for ${{ matrix.target }}
         run: |
           if [ "${{ matrix.target }}" == "macOS" ]; then
-            swift test -v
+            swift test --enable-code-coverage -v
           else
             gem install xcpretty --no-document
             set -o pipefail
@@ -41,6 +41,28 @@ jobs:
               -enableCodeCoverage YES \
               CODE_SIGNING_ALLOWED=NO | xcpretty -r junit --output junit.xml
           fi
+      - name: Export macOS coverage
+        if: ${{ matrix.target == 'macOS' }}
+        run: |
+          coverage_bin_path="$(swift build --show-bin-path)"
+          coverage_objects=()
+          for coverage_bundle in "$coverage_bin_path"/*Tests.xctest; do
+            coverage_name="${coverage_bundle##*/}"
+            coverage_name="${coverage_name%.xctest}"
+            coverage_objects+=("-object=$coverage_bundle/Contents/MacOS/$coverage_name")
+          done
+          xcrun llvm-cov export \
+            -format=lcov \
+            -instr-profile="$coverage_bin_path/codecov/default.profdata" \
+            -ignore-filename-regex='/.build/' \
+            "${coverage_objects[@]}" > macos-coverage.lcov
+      - name: Upload macOS coverage to Codecov
+        if: ${{ matrix.target == 'macOS' }}
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: macos-coverage.lcov
+          disable_search: true
       - name: Upload coverage reports to Codecov
         if: ${{ matrix.target == 'iOS' }}
         uses: codecov/codecov-action@v5

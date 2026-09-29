@@ -97,7 +97,13 @@ public protocol KeychainProtocol: Sendable {
 }
 
 public struct Keychain: KeychainProtocol, Sendable {
+    enum Storage: Sendable {
+        case dataProtection
+        case macOSLogin
+    }
+
     private let accessGroup: String?
+    private let storage: Storage
 
     /**
      Initializes a new instance of `Keychain` with the specified access group.
@@ -106,9 +112,20 @@ public struct Keychain: KeychainProtocol, Sendable {
      */
     public init(accessGroup: String? = nil) {
         self.accessGroup = accessGroup
+        storage = .dataProtection
     }
 
+    #if os(macOS)
+    /// Uses the local macOS login Keychain for an unsigned command line tool.
+    /// Items stored here do not synchronize through iCloud Keychain and do not
+    /// require a Keychain access group entitlement.
+    public static func macOSLogin() -> Self {
+        Self(accessGroup: nil, storage: .macOSLogin)
+    }
+    #endif
+
     init(accessGroup: String?,
+         storage: Storage = .dataProtection,
          secItemCopyMatching: @Sendable @escaping (CFDictionary, UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus = SecItemCopyMatching,
          secItemAdd: @Sendable @escaping (CFDictionary, UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus = SecItemAdd,
          secItemUpdate: @Sendable @escaping (CFDictionary, CFDictionary) -> OSStatus = SecItemUpdate,
@@ -119,6 +136,7 @@ public struct Keychain: KeychainProtocol, Sendable {
          secKeyCopyPublicKey: @Sendable @escaping (SecKey) -> SecKey? = SecKeyCopyPublicKey,
          secKeyCopyExternalRepresentation: @Sendable @escaping (SecKey, UnsafeMutablePointer<Unmanaged<CFError>?>?) -> CFData? = SecKeyCopyExternalRepresentation) {
         self.accessGroup = accessGroup
+        self.storage = storage
         self.secItemCopyMatching = secItemCopyMatching
         self.secItemAdd = secItemAdd
         self.secItemUpdate = secItemUpdate
@@ -233,10 +251,34 @@ public struct Keychain: KeychainProtocol, Sendable {
     }
 
     private func listGenericPasswords(forService service: String, account: String? = nil) throws -> [GenericPassword] {
+        if storage == .macOSLogin && account == nil {
+            // The file based Keychain rejects kSecMatchLimitAll together with
+            // kSecReturnData. Enumerate accounts without secrets, then fetch
+            // each password using a single match query.
+            let query: NSDictionary = [
+                kSecClass: kSecClassGenericPassword,
+                kSecAttrService: service,
+                kSecMatchLimit: kSecMatchLimitAll,
+                kSecReturnAttributes: true,
+            ]
+            var result: CFTypeRef?
+            let status = secItemCopyMatching(query, &result)
+            guard status != errSecItemNotFound else { return [] }
+            guard status == errSecSuccess, let items = result as? [[String: Any]] else {
+                throw KeychainError.errorReadingFromKeychain(status)
+            }
+            return try items.flatMap { item -> [GenericPassword] in
+                guard let account = item[kSecAttrAccount as String] as? String else {
+                    throw KeychainError.malformedPasswordData
+                }
+                return try listGenericPasswords(forService: service, account: account)
+            }
+        }
+
         let query: NSMutableDictionary = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: service,
-            kSecMatchLimit: kSecMatchLimitAll,
+            kSecMatchLimit: storage == .macOSLogin ? kSecMatchLimitOne : kSecMatchLimitAll,
             kSecReturnAttributes: true,
             kSecReturnData: true,
         ]
@@ -247,10 +289,18 @@ public struct Keychain: KeychainProtocol, Sendable {
         var items: CFTypeRef?
         let status = secItemCopyMatching(query, &items)
         guard status != errSecItemNotFound else { return [] }
-        guard status == errSecSuccess, let items = items as? [Any] else {
+        guard status == errSecSuccess else {
             throw KeychainError.errorReadingFromKeychain(status)
         }
-        return try items.map { item -> GenericPassword in
+        let returnedItems: [Any]
+        if let matches = items as? [Any] {
+            returnedItems = matches
+        } else if storage == .macOSLogin, let match = items as? [String: Any] {
+            returnedItems = [match]
+        } else {
+            throw KeychainError.errorReadingFromKeychain(status)
+        }
+        return try returnedItems.map { item -> GenericPassword in
             guard let item = item as? [String: Any],
                   let label = item[kSecAttrLabel as String] as? String,
                   let account = item[kSecAttrAccount as String] as? String,
@@ -314,6 +364,7 @@ public struct Keychain: KeychainProtocol, Sendable {
     }
 
     private var dataProtectionAttributes: [AnyHashable: Any] {
+        guard storage == .dataProtection else { return [:] }
         var attributes: [AnyHashable: Any] = [
             kSecUseDataProtectionKeychain: true,
             kSecAttrSynchronizable: true,
